@@ -1,3 +1,5 @@
+import { MainLayout } from "@/components/mainLayout";
+
 export default function Home() {
-  return <></>;
+  return <MainLayout>admin dashboard</MainLayout>;
 }
