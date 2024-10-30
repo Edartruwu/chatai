@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const CompleteAnswerResponseSchema = z.object({
+export const CompleteAnswerResponseSchema = z.object({
   Output: z.object({
     Text: z.string(),
   }),
@@ -47,7 +47,9 @@ const CompleteAnswerResponseSchema = z.object({
   ResultMetadata: z.record(z.string()).optional(),
 });
 
-type CompleteAnswerResponse = z.infer<typeof CompleteAnswerResponseSchema>;
+export type CompleteAnswerResponse = z.infer<
+  typeof CompleteAnswerResponseSchema
+>;
 
 type CompleteAnswerRequest = {
   userMessage: string;
@@ -61,7 +63,7 @@ export async function fetchCompleteAnswer(
 ): Promise<CompleteAnswerResponse> {
   if (data.sessionId === null || data.sessionId === undefined) {
   }
-  const response = await fetch(`${BACK_URL}/complete-answer`, {
+  const response = await fetch(`http://localhost:3000/chat/complete-answer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
