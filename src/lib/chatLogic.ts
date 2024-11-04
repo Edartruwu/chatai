@@ -61,15 +61,28 @@ export const BACK_URL = process.env.BACK_URL!;
 export async function fetchCompleteAnswer(
   data: CompleteAnswerRequest,
 ): Promise<CompleteAnswerResponse> {
+  let response;
   if (data.sessionId === null || data.sessionId === undefined) {
+    response = await fetch(`http://localhost:3000/chat/complete-answer`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
   }
-  const response = await fetch(`http://localhost:3000/chat/complete-answer`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  if (data.sessionId) {
+    response = await fetch(`http://localhost:3000/chat/complete-answer`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  }
+  if (response === undefined || response === null) {
+    throw new Error("No response from Bedrock");
+  }
   if (!response.ok) {
     throw new Error(`Error: ${response.status} ${response.statusText}`);
   }

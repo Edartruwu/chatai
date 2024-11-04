@@ -26,11 +26,8 @@ const formSchema = z.object({
   }),
 });
 
-export function ChatForm({
-  sessionId,
-}: {
-  sessionId: string | null | undefined;
-}) {
+export function ChatForm() {
+  let sessionId: string;
   const [isExpanded, setIsExpanded] = useState(false);
   const [apiResponse, setApiResponse] = useState<z.infer<
     typeof CompleteAnswerResponseSchema
@@ -66,7 +63,6 @@ export function ChatForm({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      // Optimistic update
       const optimisticResponse = {
         Output: { Text: "Sending your message..." },
         SessionId: sessionId ?? "",
@@ -74,22 +70,17 @@ export function ChatForm({
         GuardrailAction: "",
       };
       setApiResponse(optimisticResponse);
-
       const res = await fetchCompleteAnswer({
         userMessage: values.message,
         sessionId: sessionId ?? null,
       });
-
-      // Validate the response
       const validatedResponse = CompleteAnswerResponseSchema.parse(res);
-
-      // Save to local storage with timestamp
+      sessionId = validatedResponse.SessionId;
       const storageItem = {
         response: validatedResponse,
         timestamp: new Date().toISOString(),
       };
       localStorage.setItem("apiResponse", JSON.stringify(storageItem));
-
       setApiResponse(validatedResponse);
       form.reset();
     } catch (error) {
@@ -111,44 +102,46 @@ export function ChatForm({
   return (
     <div className="w-full mx-auto">
       {apiResponse && <ResponseCard props={apiResponse} />}
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="relative w-full"
-        >
-          <div className="relative flex items-center bg-gray-100 rounded-lg overflow-hidden">
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem className="flex-grow">
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      ref={textareaRef}
-                      placeholder="Send a message..."
-                      className="resize-none overflow-y-auto transition-all duration-200 ease-in-out px-4 py-3 min-h-[52px] max-h-[200px] rounded-lg border-0 focus:ring-0 bg-transparent"
-                      onFocus={() => setIsExpanded(true)}
-                      onBlur={() => setIsExpanded(false)}
-                      onKeyDown={handleKeyDown}
-                      rows={1}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              className="absolute right-2 bottom-2 rounded-full bg-black hover:bg-gray-800 text-white"
-            >
-              <ArrowUp className="h-5 w-5" />
-              <span className="sr-only">Send message</span>
-            </Button>
-          </div>
-        </form>
-      </Form>
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-[800px] flex flex-col items-center justify-center z-50 px-6 mb-8">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="relative w-full"
+          >
+            <div className="relative flex items-center bg-gray-100 rounded-lg overflow-hidden">
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        ref={textareaRef}
+                        placeholder="Send a message..."
+                        className="resize-none overflow-y-auto transition-all duration-200 ease-in-out px-4 py-3 min-h-[52px] max-h-[200px] rounded-lg border-0 focus:ring-0 bg-transparent"
+                        onFocus={() => setIsExpanded(true)}
+                        onBlur={() => setIsExpanded(false)}
+                        onKeyDown={handleKeyDown}
+                        rows={1}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                className="absolute right-2 bottom-2 rounded-full bg-black hover:bg-gray-800 text-white"
+              >
+                <ArrowUp className="h-5 w-5" />
+                <span className="sr-only">Send message</span>
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }
