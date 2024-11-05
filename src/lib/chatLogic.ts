@@ -56,8 +56,7 @@ type CompleteAnswerRequest = {
   sessionId: string | null | undefined;
 };
 
-export const BACK_URL =
-  "https://organization-slightly-lasting-terrace.trycloudflare.com";
+export const BACK_URL = "https://mods-returning-beads-spent.trycloudflare.com";
 
 export async function fetchCompleteAnswer(
   data: CompleteAnswerRequest,
