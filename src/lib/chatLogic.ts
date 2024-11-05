@@ -56,14 +56,15 @@ type CompleteAnswerRequest = {
   sessionId: string | null | undefined;
 };
 
-export const BACK_URL = process.env.BACK_URL!;
+export const BACK_URL =
+  "https://organization-slightly-lasting-terrace.trycloudflare.com";
 
 export async function fetchCompleteAnswer(
   data: CompleteAnswerRequest,
 ): Promise<CompleteAnswerResponse> {
   let response;
   if (data.sessionId === null || data.sessionId === undefined) {
-    response = await fetch(`http://localhost:3000/chat/complete-answer`, {
+    response = await fetch(`${BACK_URL}/chat/complete-answer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +73,7 @@ export async function fetchCompleteAnswer(
     });
   }
   if (data.sessionId) {
-    response = await fetch(`http://localhost:3000/chat/complete-answer`, {
+    response = await fetch(`${BACK_URL}/chat/complete-answer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

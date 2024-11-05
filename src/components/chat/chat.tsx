@@ -4,35 +4,39 @@ import { useState, useRef, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { fetchCompleteAnswer } from "@/lib/chatLogic";
 import { CompleteAnswerResponseSchema } from "@/lib/chatLogic";
 import { ResponseCard } from "./response";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+const MAX_CHARS = 500;
+const SHOW_COUNTER_THRESHOLD = 400;
 
 const formSchema = z.object({
   message: z.string().min(2, {
-    message: "",
+    message: "Message must be at least 2 characters.",
   }),
 });
 
+type Message = {
+  type: "user" | "ai";
+  content: string;
+  response?: z.infer<typeof CompleteAnswerResponseSchema>;
+};
+
 export function ChatForm() {
-  let sessionId: string;
+  const [sessionId, setSessionId] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
-  const [apiResponse, setApiResponse] = useState<z.infer<
-    typeof CompleteAnswerResponseSchema
-  > | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,52 +47,82 @@ export function ChatForm() {
 
   const { toast } = useToast();
 
+  const messageLength = form.watch("message").length;
+  const showCounter = messageLength >= SHOW_COUNTER_THRESHOLD;
+  const isOverLimit = messageLength > MAX_CHARS;
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        200,
+      )}px`;
     }
   }, [form.watch("message")]);
 
   useEffect(() => {
-    const storedResponse = localStorage.getItem("apiResponse");
-    if (storedResponse) {
-      const { response, timestamp } = JSON.parse(storedResponse);
-      setApiResponse(response);
-      console.log(
-        `Last response stored at: ${new Date(timestamp).toLocaleString()}`,
-      );
+    const storedMessages = localStorage.getItem("chatMessages");
+    if (storedMessages) {
+      setMessages(JSON.parse(storedMessages));
     }
   }, []);
 
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (isOverLimit) {
+      toast({
+        title: "Error",
+        description: `Message exceeds ${MAX_CHARS} characters. Please shorten your message.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const optimisticResponse = {
-        Output: { Text: "Sending your message..." },
-        SessionId: sessionId ?? "",
-        Citations: [],
-        GuardrailAction: "",
+      const userMessage: Message = { type: "user", content: values.message };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+      const optimisticResponse: Message = {
+        type: "ai",
+        content: "Thinking...",
       };
-      setApiResponse(optimisticResponse);
+      setMessages((prevMessages) => [...prevMessages, optimisticResponse]);
+
+      form.reset();
       const res = await fetchCompleteAnswer({
         userMessage: values.message,
-        sessionId: sessionId ?? null,
+        sessionId: sessionId || null,
       });
       const validatedResponse = CompleteAnswerResponseSchema.parse(res);
-      sessionId = validatedResponse.SessionId;
-      const storageItem = {
+      setSessionId(validatedResponse.SessionId);
+
+      const aiMessage: Message = {
+        type: "ai",
+        content: validatedResponse.Output.Text,
         response: validatedResponse,
-        timestamp: new Date().toISOString(),
       };
-      localStorage.setItem("apiResponse", JSON.stringify(storageItem));
-      setApiResponse(validatedResponse);
-      form.reset();
+      setMessages((prevMessages) => [...prevMessages.slice(0, -1), aiMessage]);
+
+      localStorage.setItem(
+        "chatMessages",
+        JSON.stringify([...messages, userMessage, aiMessage]),
+      );
     } catch (error) {
       toast({
         title: "Error",
         description: `${JSON.stringify(error)}`,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -100,15 +134,39 @@ export function ChatForm() {
   };
 
   return (
-    <div className="w-full mx-auto">
-      {apiResponse && <ResponseCard props={apiResponse} />}
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-[800px] flex flex-col items-center justify-center z-50 px-6 mb-8">
+    <div className="w-full mx-auto flex flex-col h-screen">
+      <ScrollArea
+        className="flex-grow max-w-[800px] mx-auto w-full p-4"
+        ref={scrollAreaRef}
+      >
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`mb-4 ${
+              message.type === "user" ? "text-right" : "text-left"
+            }`}
+          >
+            {message.type === "user" ? (
+              <div className="inline-block max-w-[70%] p-3 rounded-lg bg-primary text-primary-foreground">
+                {message.content}
+              </div>
+            ) : message.response ? (
+              <ResponseCard props={message.response} />
+            ) : (
+              <div className="inline-block max-w-[70%] p-3 rounded-lg bg-secondary text-secondary-foreground">
+                {message.content}
+              </div>
+            )}
+          </div>
+        ))}
+      </ScrollArea>
+      <div className="w-full max-w-[800px] mx-auto px-4 mb-8">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="relative w-full"
           >
-            <div className="relative flex items-center bg-gray-100 rounded-lg overflow-hidden">
+            <div className="relative flex items-center bg-muted rounded-lg overflow-hidden">
               <FormField
                 control={form.control}
                 name="message"
@@ -126,19 +184,34 @@ export function ChatForm() {
                         rows={1}
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
               <Button
                 type="submit"
                 size="icon"
-                className="absolute right-2 bottom-2 rounded-full bg-black hover:bg-gray-800 text-white"
+                className="absolute right-2 bottom-2 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                disabled={messageLength === 0 || isLoading}
               >
-                <ArrowUp className="h-5 w-5" />
-                <span className="sr-only">Send message</span>
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-5 w-5" />
+                )}
+                <span className="sr-only">
+                  {isLoading ? "Sending message" : "Send message"}
+                </span>
               </Button>
             </div>
+            {showCounter && (
+              <div
+                className={`absolute -bottom-6 right-0 text-sm ${
+                  isOverLimit ? "text-destructive" : "text-muted-foreground"
+                }`}
+              >
+                {messageLength}/{MAX_CHARS}
+              </div>
+            )}
           </form>
         </Form>
       </div>
