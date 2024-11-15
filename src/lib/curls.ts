@@ -1,3 +1,5 @@
+import { BASE_URL } from "./url";
+
 type ErrorResponse = { error: string };
 
 type CompleteAnswerRequest = {
@@ -36,8 +38,6 @@ type DeleteObjectResponse = {
 type SyncKnowledgeBaseResponse = {
   // Define based on `service.SyncKnowledgeBase` return type
 };
-
-export const BASE_URL = process.env.BACK_URL!;
 
 // Helper function to handle API response
 async function handleResponse<T>(response: Response): Promise<T> {

@@ -1,5 +1,13 @@
 import { MainLayout } from "@/components/mainLayout";
-
-export default function Home() {
-  return <MainLayout>admin dashboard</MainLayout>;
+import { getServerUser } from "@/server/getUser";
+import { redirect } from "next/navigation";
+export default async function Home() {
+  const user = await getServerUser();
+  if (!user) {
+    redirect("/auth");
+  }
+  if (user.isAdmin) {
+    redirect("/admin");
+  }
+  return <MainLayout>.</MainLayout>;
 }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BASE_URL } from "./url";
 
 export const CompleteAnswerResponseSchema = z.object({
   Output: z.object({
@@ -56,31 +57,17 @@ type CompleteAnswerRequest = {
   sessionId: string | null | undefined;
 };
 
-export const BACK_URL =
-  "https://2594-2001-1388-19-768c-90e-8e68-d136-bb76.ngrok-free.app ";
-
 export async function fetchCompleteAnswer(
   data: CompleteAnswerRequest,
 ): Promise<CompleteAnswerResponse> {
   let response;
-  if (data.sessionId === null || data.sessionId === undefined) {
-    response = await fetch(`${BACK_URL}/chat/complete-answer`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-  }
-  if (data.sessionId) {
-    response = await fetch(`${BACK_URL}/chat/complete-answer`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-  }
+  response = await fetch(`${BASE_URL}/chat/complete-answer`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
   if (response === undefined || response === null) {
     throw new Error("No response from Bedrock");
   }

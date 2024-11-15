@@ -117,7 +117,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
                 <button id="close-chat" aria-label="Close chat">×</button>
             </div>
             <div id="chat-content">
-                <iframe src="https://pl-nickel-closer-proposals.trycloudflare.com/chat" title="Chat Support"></iframe>
+    <iframe src="http://localhost:3001/chat" title="Chat Support"></iframe>
             </div>
         </div>
     </div>

@@ -23,6 +23,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+export const S3_BASE_URL = "https://opd-peru.s3.us-east-1.amazonaws.com/data/";
+
 function Source({
   citation,
   isMobile,
