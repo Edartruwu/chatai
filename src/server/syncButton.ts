@@ -1,5 +1,6 @@
 "use server";
 import { serverPOST } from "./requests";
 export async function syncKB() {
-  await serverPOST("/sync-knowledge-base");
+  let res = await serverPOST("/sync-knowledge-base");
+  console.info(JSON.stringify(res));
 }

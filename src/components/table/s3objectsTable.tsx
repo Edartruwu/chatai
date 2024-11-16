@@ -1,81 +1,86 @@
 "use client";
 
-import { useState } from "react";
-import { columns, S3objects } from "./columns";
+import { useState, useEffect } from "react";
+import { columns } from "./columns";
 import { DataTable } from "./data-table";
+import { getS3Objects, S3Object, S3Response } from "@/server/getS3Objects";
+import { deleteObject } from "@/server/deleteS3Object";
+import { useToast } from "@/hooks/use-toast";
 
-const mockData: S3objects[] = [
-  {
-    id: 1,
-    filename: "example1.jpg",
-    s3_key: "uploads/example1.jpg",
-    user_id: "user1",
-    created_at: new Date("2023-05-01"),
-    updated_at: new Date("2023-05-01"),
-  },
-  {
-    id: 2,
-    filename: "example2.pdf",
-    s3_key: "uploads/example2.pdf",
-    user_id: "user2",
-    created_at: new Date("2023-05-02"),
-    updated_at: new Date("2023-05-02"),
-  },
-  {
-    id: 1,
-    filename: "report_Q1_2023.pdf",
-    s3_key: "documents/reports/report_Q1_2023.pdf",
-    user_id: "user_123",
-    created_at: new Date("2023-03-01T10:15:30Z"),
-    updated_at: new Date("2023-03-01T10:15:30Z"),
-  },
-  {
-    id: 2,
-    filename: "invoice_45234.xlsx",
-    s3_key: "invoices/2023/invoice_45234.xlsx",
-    user_id: "user_456",
-    created_at: new Date("2023-04-05T12:00:00Z"),
-    updated_at: new Date("2023-04-05T12:00:00Z"),
-  },
-  {
-    id: 3,
-    filename: "presentation_final.pptx",
-    s3_key: "presentations/2023/presentation_final.pptx",
-    user_id: "user_789",
-    created_at: new Date("2023-05-15T09:45:20Z"),
-    updated_at: new Date("2023-05-16T14:30:10Z"),
-  },
-  {
-    id: 4,
-    filename: "data_export.csv",
-    s3_key: "exports/data/data_export_2023_06.csv",
-    user_id: "user_101",
-    created_at: new Date("2023-06-25T15:30:00Z"),
-    updated_at: new Date("2023-06-25T15:30:00Z"),
-  },
-  {
-    id: 5,
-    filename: "user_guide.pdf",
-    s3_key: "manuals/user_guide.pdf",
-    user_id: "user_202",
-    created_at: new Date("2023-07-12T08:00:00Z"),
-    updated_at: new Date("2023-07-12T08:00:00Z"),
-  },
-];
+const PAGE_SIZE = 8;
 
 export default function S3ObjectsTable() {
-  const [data, setData] = useState(mockData);
+  const [data, setData] = useState<S3Object[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const handleDelete = (ids: number[]) => {
-    // Mock delete action
-    console.log(`Deleting objects with ids: ${ids.join(", ")}`);
-    // You can implement the actual delete logic here
-    setData((prevData) => prevData.filter((item) => !ids.includes(item.id)));
-  };
+  useEffect(
+    function () {
+      fetchData();
+    },
+    [pageIndex],
+  );
+
+  function fetchData() {
+    setIsLoading(true);
+    setError(null);
+
+    getS3Objects(pageIndex + 1, PAGE_SIZE)
+      .then(function (response: S3Response | null) {
+        if (response) {
+          setData(response.Data);
+          setPageCount(Math.ceil(response.Total / PAGE_SIZE));
+        } else {
+          setError("No data available.");
+        }
+        setIsLoading(false);
+      })
+      .catch(function (err: Error) {
+        setError("Failed to fetch data. Please try again.");
+        setIsLoading(false);
+        console.error("Error fetching S3 objects:", err);
+      });
+  }
+
+  async function handleDelete(ids: number[]): Promise<void> {
+    try {
+      await Promise.all(ids.map((id) => deleteObject(id)));
+      toast({ title: "All objects deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting objects:", error);
+      toast({ title: "Failed to delete some or all objects" });
+    } finally {
+      fetchData();
+    }
+  }
+
+  function handlePageChange(newPage: number) {
+    setPageIndex(newPage);
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
-    <div>
-      <DataTable columns={columns} data={data} onDelete={handleDelete} />
+    <div className="">
+      <DataTable
+        width={1000}
+        columns={columns}
+        data={data}
+        onDeleteAction={handleDelete}
+        pageCount={pageCount}
+        pageSize={PAGE_SIZE}
+        pageIndex={pageIndex}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }

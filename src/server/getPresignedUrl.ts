@@ -18,7 +18,7 @@ export async function getPresignedUrl(
       body: JSON.stringify({ fileName }),
       credentials: "include",
     });
-
+    console.log(JSON.stringify(response));
     console.log("Fetch response status:", response.status);
 
     if (!response.ok) {

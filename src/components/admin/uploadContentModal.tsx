@@ -25,7 +25,7 @@ function SyncButton() {
     <Button
       onClick={async function () {
         try {
-          // await syncKB();
+          await syncKB();
           toast({
             title: "Base de datos actualizada!",
             description:

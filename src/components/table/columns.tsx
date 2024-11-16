@@ -2,17 +2,15 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { S3Object } from "@/server/getS3Objects";
+//import { GetUserById } from "@/server/getUserById";
+/*
+async function getUserName(id: number): Promise<string | undefined> {
+  let user = await GetUserById();
+  return user?.email;
+}*/
 
-export type S3objects = {
-  id: number;
-  filename: string;
-  s3_key: string;
-  user_id: string;
-  created_at: Date;
-  updated_at: Date;
-};
-
-export const columns: ColumnDef<S3objects>[] = [
+export const columns: ColumnDef<S3Object>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -43,13 +41,9 @@ export const columns: ColumnDef<S3objects>[] = [
   {
     accessorKey: "user_id",
     header: "Subido por:",
-  },
-  {
-    accessorKey: "created_at",
-    header: "Subido el",
-    cell: (info) => {
-      const date = info.getValue() as Date;
-      return date.toLocaleDateString();
-    },
+    /*   cell: async ({ row }) => {
+      let userName = await getUserName(row.original.id);
+      return <div>{userName}</div>;
+    },*/
   },
 ];

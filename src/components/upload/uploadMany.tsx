@@ -5,16 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { X, Upload } from "lucide-react";
 import { useUpload } from "@/hooks/use-upload";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MultipleFileUploadProps {
   accept?: string;
   maxFiles?: number;
 }
 
-export default function MultipleFileUpload({
+export default function Component({
   accept = "*",
-  maxFiles = 5,
-}: MultipleFileUploadProps): JSX.Element {
+  maxFiles = 1000,
+}: MultipleFileUploadProps = {}) {
   const { uploadState, uploadMultiple } = useUpload();
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -125,67 +126,69 @@ export default function MultipleFileUpload({
         />
         <Upload className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-2 text-sm text-gray-600">
-          Arrastra y suelta archivos aquí, o haz clic para seleccionar archivos
+          Drag and drop files here, or click to select files
         </p>
-        <p className="mt-1 text-xs text-gray-500">
-          {`Hasta ${maxFiles} archivo${maxFiles > 1 ? "s" : ""}`}
-        </p>
+        <p className="mt-1 text-xs text-gray-500">{`Up to ${maxFiles} file${maxFiles > 1 ? "s" : ""}`}</p>
       </div>
       {files.length > 0 && (
-        <div className="space-y-2">
-          {files.map((file, index) => (
-            <div
-              key={index}
-              className="flex items-center space-x-2 bg-gray-100 p-2 rounded"
-            >
-              {previews[index] && (
-                <div className="w-16 h-16 flex-shrink-0">
-                  {file.type.startsWith("image/") ? (
-                    <img
-                      src={previews[index]}
-                      alt="Vista previa"
-                      className="w-full h-full object-cover rounded"
-                    />
-                  ) : file.type.startsWith("video/") ? (
-                    <video
-                      src={previews[index]}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded">
-                      <span className="text-xs text-gray-500">
-                        {file.name.split(".").pop()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-              <p className="text-sm flex-grow truncate">{file.name}</p>
-              <Button
-                onClick={() => handleDelete(index)}
-                variant="destructive"
-                size="icon"
-                className="h-8 w-8"
+        <ScrollArea className="h-[240px]">
+          <div className="space-y-2 pr-4">
+            {files.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center space-x-2 bg-gray-100 p-2 rounded"
               >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Eliminar</span>
-              </Button>
-            </div>
-          ))}
-          <Button
-            onClick={handleUpload}
-            disabled={uploadState.isUploading || files.length === 0}
-            className="w-full"
-          >
-            {uploadState.isUploading ? "Subiendo..." : "Subir todos"}
-          </Button>
-        </div>
+                {previews[index] && (
+                  <div className="w-16 h-16 flex-shrink-0">
+                    {file.type.startsWith("image/") ? (
+                      <img
+                        src={previews[index]}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded"
+                      />
+                    ) : file.type.startsWith("video/") ? (
+                      <video
+                        src={previews[index]}
+                        className="w-full h-full object-cover rounded"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded">
+                        <span className="text-xs text-gray-500">
+                          {file.name.split(".").pop()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <p className="text-sm flex-grow truncate">{file.name}</p>
+                <Button
+                  onClick={() => handleDelete(index)}
+                  variant="destructive"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Delete</span>
+                </Button>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+      {files.length > 0 && (
+        <Button
+          onClick={handleUpload}
+          disabled={uploadState.isUploading || files.length === 0}
+          className="w-full"
+        >
+          {uploadState.isUploading ? "Uploading..." : "Upload all"}
+        </Button>
       )}
       {uploadState.isUploading && (
         <div className="space-y-2">
           <Progress value={fakeProgress} className="w-full" />
           <p className="text-sm text-center text-gray-600">
-            Subiendo archivos... {fakeProgress}%
+            Uploading files... {fakeProgress}%
           </p>
         </div>
       )}
@@ -195,7 +198,7 @@ export default function MultipleFileUpload({
       {uploadSuccess && (
         <div className="text-center">
           <p className="text-green-500 font-semibold">
-            ¡Archivos subidos con éxito!
+            Files uploaded successfully!
           </p>
         </div>
       )}
