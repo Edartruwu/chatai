@@ -1,14 +1,12 @@
-import { BASE_URL } from "./url";
-
-type ErrorResponse = { error: string };
-
+//type ErrorResponse = { error: string };
+/*
 type GetUserResponse = Array<any>;
 type PromoteUserRequest = { userID: string };
 type PromoteUserResponse = {};
 type BlacklistRequest = { email: string };
 type BlacklistResponse = {};
 type DeleteUserResponse = {};
-
+/
 // Base URL for the user API
 
 // Helper function to handle API response
@@ -125,12 +123,26 @@ export async function removeFromBlacklist(
   return handleResponse<BlacklistResponse>(response);
 }
 
+
+
+*/
+
+import { BASE_URL } from "./url";
+type ErrorResponse = { error: string };
+export async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const errorBody: ErrorResponse = await response.json();
+    throw new Error(errorBody.error);
+  }
+  return response.json();
+}
+
 type LogoutResponse = { message: string };
 
 export async function logout(): Promise<LogoutResponse> {
   const response = await fetch(`${BASE_URL}/logout`, {
     method: "POST",
-    credentials: "include", // Include cookies in the request
+    credentials: "include",
   });
   return handleResponse<LogoutResponse>(response);
 }

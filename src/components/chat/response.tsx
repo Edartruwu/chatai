@@ -128,6 +128,7 @@ export function ResponseCard({ props }: { props: CompleteAnswerResponse }) {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-4">
+            {/* eslint-disable @typescript-eslint/no-unused-vars */}
             <ReactMarkdown
               className="prose prose-sm dark:prose-invert"
               components={{
@@ -150,6 +151,7 @@ export function ResponseCard({ props }: { props: CompleteAnswerResponse }) {
             >
               {props.Output.Text}
             </ReactMarkdown>
+            {/* eslint-disable @typescript-eslint/no-unused-vars */}
           </div>
         </div>
       </CardContent>

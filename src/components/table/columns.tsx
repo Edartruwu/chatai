@@ -3,12 +3,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { S3Object } from "@/server/getS3Objects";
-//import { GetUserById } from "@/server/getUserById";
-/*
-async function getUserName(id: number): Promise<string | undefined> {
-  let user = await GetUserById();
-  return user?.email;
-}*/
 
 export const columns: ColumnDef<S3Object>[] = [
   {
@@ -39,11 +33,7 @@ export const columns: ColumnDef<S3Object>[] = [
     header: "S3 Key",
   },
   {
-    accessorKey: "user_id",
+    accessorKey: "user_email",
     header: "Subido por:",
-    /*   cell: async ({ row }) => {
-      let userName = await getUserName(row.original.id);
-      return <div>{userName}</div>;
-    },*/
   },
 ];

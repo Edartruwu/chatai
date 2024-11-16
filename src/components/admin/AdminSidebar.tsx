@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Bot, Home } from "lucide-react";
+import { Bot, FileUserIcon, Home } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +28,13 @@ const navMain = [
     title: "Modifica el contenido",
     url: "/admin/content",
     icon: Bot,
+    isActive: true,
+  },
+  {
+    title: "Admin Whitelist",
+    url: "/admin/whitelist",
+    icon: FileUserIcon,
+    isActive: true,
   },
 ];
 

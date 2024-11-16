@@ -1,3 +1,4 @@
+/*
 import { BASE_URL } from "./url";
 
 type ErrorResponse = { error: string };
@@ -112,3 +113,4 @@ export async function syncKnowledgeBase(): Promise<SyncKnowledgeBaseResponse> {
   });
   return handleResponse<SyncKnowledgeBaseResponse>(response);
 }
+*/

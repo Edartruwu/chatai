@@ -6,6 +6,7 @@ const S3ObjectSchema = z.object({
   filename: z.string(),
   s3_key: z.string(),
   user_id: z.string(),
+  user_email: z.string(),
 });
 
 const S3ResponseSchema = z.object({

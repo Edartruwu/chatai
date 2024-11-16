@@ -69,6 +69,7 @@ export function SingleFileUpload({
           {preview && (
             <div className="mb-2">
               {file.type.startsWith("image/") ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={preview}
                   alt="Preview"
@@ -92,7 +93,7 @@ export function SingleFileUpload({
         <Progress value={uploadState.progress} className="w-full" />
       )}
       {uploadState.error && <p className="text-red-500">{uploadState.error}</p>}
-      {uploadState.uploadedUrl && (
+      {uploadState.uploadedUrls[0] && (
         <p className="text-green-500">File uploaded successfully!</p>
       )}
     </div>

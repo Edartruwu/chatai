@@ -141,6 +141,7 @@ export default function Component({
                 {previews[index] && (
                   <div className="w-16 h-16 flex-shrink-0">
                     {file.type.startsWith("image/") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={previews[index]}
                         alt="Preview"

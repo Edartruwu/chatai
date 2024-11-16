@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData extends { id: number }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   columns: ColumnDef<TData, any>[];
   data: TData[];
   onDeleteAction: (ids: number[]) => void;
@@ -93,7 +94,7 @@ export function DataTable<TData extends { id: number }>({
           onClick={handleDeleteSelected}
           className="w-full sm:w-auto sm:ml-auto"
         >
-          Delete Selected
+          Borra las seleccionadas
         </Button>
       </div>
       <div className="rounded-md border overflow-x-auto">

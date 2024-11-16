@@ -7,7 +7,7 @@ interface UploadState {
   isUploading: boolean;
   progress: number;
   error: string | null;
-  uploadedUrl: string | null;
+  uploadedUrls: string[];
 }
 
 export function useUpload() {
@@ -15,68 +15,74 @@ export function useUpload() {
     isUploading: false,
     progress: 0,
     error: null,
-    uploadedUrl: null,
+    uploadedUrls: [],
   });
 
-  const upload = useCallback(async (file: File) => {
-    setUploadState({
-      isUploading: true,
-      progress: 0,
-      error: null,
-      uploadedUrl: null,
-    });
-
-    try {
-      const url = await uploadFile(file);
-      if (url) {
-        setUploadState({
-          isUploading: false,
-          progress: 100,
-          error: null,
-          uploadedUrl: url,
-        });
-        return url;
-      } else {
-        throw new Error("Upload failed");
-      }
-    } catch (error) {
+  function upload(file: File): Promise<string | null> {
+    return new Promise(function (resolve) {
       setUploadState({
-        isUploading: false,
+        isUploading: true,
         progress: 0,
-        error: error instanceof Error ? error.message : String(error),
-        uploadedUrl: null,
-      });
-      return null;
-    }
-  }, []);
-
-  const uploadMultiple = useCallback(async (files: File[]) => {
-    setUploadState({
-      isUploading: true,
-      progress: 0,
-      error: null,
-      uploadedUrl: null,
-    });
-
-    try {
-      const urls = await uploadMany(files);
-      setUploadState({
-        isUploading: false,
-        progress: 100,
         error: null,
-        uploadedUrl: urls.join(","),
+        uploadedUrls: [],
       });
-      return urls;
-    } catch (error) {
-      setUploadState({
-        isUploading: false,
-        progress: 0,
-        error: error instanceof Error ? error.message : String(error),
-        uploadedUrl: null,
-      });
-      return [];
-    }
-  }, []);
 
-  return { uploadState, upload, uploadMultiple };
+      uploadFile(file, "")
+        .then(function (url: string) {
+          setUploadState({
+            isUploading: false,
+            progress: 100,
+            error: null,
+            uploadedUrls: [url],
+          });
+          resolve(url);
+        })
+        .catch(function (error: unknown) {
+          setUploadState({
+            isUploading: false,
+            progress: 0,
+            error: error instanceof Error ? error.message : String(error),
+            uploadedUrls: [],
+          });
+          resolve(null);
+        });
+    });
+  }
+
+  function uploadMultiple(files: File[]): Promise<string[]> {
+    return new Promise(function (resolve) {
+      setUploadState({
+        isUploading: true,
+        progress: 0,
+        error: null,
+        uploadedUrls: [],
+      });
+
+      uploadMany(files)
+        .then(function (urls: string[]) {
+          setUploadState({
+            isUploading: false,
+            progress: 100,
+            error: null,
+            uploadedUrls: urls,
+          });
+          resolve(urls);
+        })
+        .catch(function (error: unknown) {
+          setUploadState({
+            isUploading: false,
+            progress: 0,
+            error: error instanceof Error ? error.message : String(error),
+            uploadedUrls: [],
+          });
+          resolve([]);
+        });
+    });
+  }
+
+  return {
+    uploadState,
+    upload: useCallback(upload, []),
+    uploadMultiple: useCallback(uploadMultiple, []),
+  };
 }

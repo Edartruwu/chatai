@@ -60,8 +60,7 @@ type CompleteAnswerRequest = {
 export async function fetchCompleteAnswer(
   data: CompleteAnswerRequest,
 ): Promise<CompleteAnswerResponse> {
-  let response;
-  response = await fetch(`${BASE_URL}/chat/complete-answer`, {
+  const response = await fetch(`${BASE_URL}/chat/complete-answer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
