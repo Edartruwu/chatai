@@ -1,4 +1,4 @@
-const back_url = process.env.BACK_URL;
+const back_url = process.env.NEXT_PUBLIC_BACK_URL;
 
 if (back_url === undefined || back_url === null) {
   throw new Error("No backend url found");
