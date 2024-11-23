@@ -7,6 +7,8 @@ import {
 } from "@/components/admin/uploadContentModal";
 import S3ObjectsTable from "@/components/table/s3objectsTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const user = await getServerUser();
   if (!user) {
