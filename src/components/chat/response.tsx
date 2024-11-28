@@ -5,7 +5,6 @@ import { MessageCircle, ExternalLink, Plus, User } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { CompleteAnswerResponse } from "@/lib/chatLogic";
 import ReactMarkdown from "react-markdown";
-
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,8 +21,10 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
+import { convertS3UrlToBaseUrl } from "@/lib/s3UrlParser";
 
-export const S3_BASE_URL = "https://opd-peru.s3.us-east-1.amazonaws.com/data/";
+export const S3_BASE_URL = "https://opd-peru.s3.us-east-1.amazonaws.com/";
 
 function Source({
   citation,
@@ -41,14 +42,15 @@ function Source({
         <p className="text-sm text-muted-foreground">{sourceText}</p>
       </ScrollArea>
       {sourceUrl && (
-        <a
-          href={sourceUrl}
+        <Link
+          href={`${convertS3UrlToBaseUrl(sourceUrl)}`}
           target="_blank"
           rel="noopener noreferrer"
+          prefetch={true}
           className="inline-flex items-center text-xs text-primary hover:underline mt-2"
         >
           View source <ExternalLink className="ml-1 h-3 w-3" />
-        </a>
+        </Link>
       )}
     </div>
   );
