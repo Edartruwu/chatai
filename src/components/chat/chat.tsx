@@ -30,7 +30,9 @@ type Message = {
 };
 
 export function ChatForm(): JSX.Element {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
