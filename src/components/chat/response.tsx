@@ -122,7 +122,7 @@ export function ResponseCard({ props }: { props: CompleteAnswerResponse }) {
       <CardContent className="pt-6 pb-4">
         <div className="flex items-start space-x-4">
           <Avatar className="w-10 h-10">
-            <AvatarImage src="/agent-avatar.png" alt="Agent Avatar" />
+            <AvatarImage src="/zorrito.jpeg" alt="Agent Avatar" />
             <AvatarFallback>
               <User />
             </AvatarFallback>

@@ -20,6 +20,7 @@ import {
 import { Button } from "../ui/button";
 import { logout } from "@/lib/userCurl";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
@@ -31,7 +32,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-
+  const router = useRouter();
   const { toast } = useToast();
 
   const extractedName = user.name || user.email.match(/^[^@]+/)?.[0] || "";
@@ -86,6 +87,7 @@ export function NavUser({
                 onClick={function () {
                   try {
                     logout();
+                    router.push("/");
                     toast({ title: "Sessión cerrada correctamente" });
                   } catch (error) {
                     toast({
