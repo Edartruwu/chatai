@@ -121,16 +121,20 @@ function Sources({
 }
 
 export function ResponseCard({ props }: { props: CompleteAnswerResponse }) {
+  const isMobile = useIsMobile();
   return (
     <Card className="w-full max-w-2xl shadow-md">
       <CardContent className="pt-6 pb-4">
         <div className="flex items-start space-x-4">
-          <Avatar className="w-10 h-10">
-            <AvatarImage src="/zorrito.jpeg" alt="Agent Avatar" />
-            <AvatarFallback>
-              <User />
-            </AvatarFallback>
-          </Avatar>
+          {!isMobile && (
+            <Avatar className="w-10 h-10">
+              <AvatarImage src="/zorrito.jpeg" alt="Agent Avatar" />
+              <AvatarFallback>
+                <User />
+              </AvatarFallback>
+            </Avatar>
+          )}
+
           <div className="flex-1 space-y-4">
             {/* eslint-disable @typescript-eslint/no-unused-vars */}
             <ReactMarkdown
@@ -169,17 +173,20 @@ export function ResponseCard({ props }: { props: CompleteAnswerResponse }) {
 }
 
 export function SkeletonResponse() {
+  const isMobile = useIsMobile();
   return (
     <Card className="w-full max-w-2xl shadow-md">
       <CardContent className="pt-6 pb-4">
         <div className="flex items-start space-x-4">
-          <Skeleton className="w-10 h-10 rounded-full">
-            <Avatar className="w-10 h-10">
-              <AvatarFallback>
-                <User className="w-6 h-6 text-muted-foreground" />
-              </AvatarFallback>
-            </Avatar>
-          </Skeleton>
+          {!isMobile && (
+            <Skeleton className="w-10 h-10 rounded-full">
+              <Avatar className="w-10 h-10">
+                <AvatarFallback>
+                  <User className="w-6 h-6 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+            </Skeleton>
+          )}
           <div className="flex-1 space-y-4">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-full" />
