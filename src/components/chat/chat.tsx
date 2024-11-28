@@ -5,7 +5,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ArrowUp, Loader2 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,8 +14,8 @@ import { CompleteAnswerResponseSchema } from "@/lib/chatLogic";
 import { ResponseCard } from "./response";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const MAX_CHARS = 500;
-const SHOW_COUNTER_THRESHOLD = 400;
+const MAX_CHARS: number = 500;
+const SHOW_COUNTER_THRESHOLD: number = 400;
 
 const formSchema = z.object({
   message: z.string().min(2, {
@@ -30,13 +29,14 @@ type Message = {
   response?: z.infer<typeof CompleteAnswerResponseSchema>;
 };
 
-export function ChatForm() {
+export function ChatForm(): JSX.Element {
   const [sessionId, setSessionId] = useState<string>("");
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   console.log(isExpanded);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,34 +47,38 @@ export function ChatForm() {
 
   const { toast } = useToast();
 
-  const messageLength = form.watch("message").length;
-  const showCounter = messageLength >= SHOW_COUNTER_THRESHOLD;
-  const isOverLimit = messageLength > MAX_CHARS;
+  const messageLength: number = form.watch("message").length;
+  const showCounter: boolean = messageLength >= SHOW_COUNTER_THRESHOLD;
+  const isOverLimit: boolean = messageLength > MAX_CHARS;
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        200,
-      )}px`;
-    }
-  }, [form.watch("message")]);
+  useEffect(
+    function adjustTextareaHeight() {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height = `${Math.min(
+          textareaRef.current.scrollHeight,
+          200,
+        )}px`;
+      }
+    },
+    [form.watch("message")],
+  );
 
-  useEffect(() => {
+  useEffect(function loadStoredMessages() {
     const storedMessages = localStorage.getItem("chatMessages");
     if (storedMessages) {
       setMessages(JSON.parse(storedMessages));
     }
   }, []);
 
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
+  useEffect(
+    function scrollToBottom() {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    },
+    [messages],
+  );
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>): Promise<void> {
     if (isOverLimit) {
       toast({
         title: "Error",
@@ -126,12 +130,12 @@ export function ChatForm() {
     }
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  function handleKeyDown(event: React.KeyboardEvent): void {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       form.handleSubmit(onSubmit)();
     }
-  };
+  }
 
   return (
     <div className="w-full mx-auto flex flex-col h-screen">
@@ -159,6 +163,7 @@ export function ChatForm() {
             )}
           </div>
         ))}
+        <div ref={bottomRef} />
       </ScrollArea>
       <div className="w-full max-w-[800px] mx-auto px-4 mb-8">
         <Form {...form}>
