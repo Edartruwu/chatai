@@ -9,19 +9,19 @@ import { BASE_URL } from "@/lib/url";
 
 export interface getChatProps {
   userMessage: string;
-  sessionID: string | null;
-  userChatID: string;
+  sessionId: string | null;
+  userChatId: string;
 }
 
 export async function getChat(
   params: getChatProps,
 ): Promise<CompleteAnswerResponse> {
   try {
-    const response = await fetch(`${BASE_URL}/chat`, {
+    const response = await fetch(`${BASE_URL}/chat/complete-answer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${CHAT_API_KEY}`,
+        Authorization: `${CHAT_API_KEY}`,
       },
       body: JSON.stringify(params),
     });

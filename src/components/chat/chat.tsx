@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { fetchCompleteAnswer } from "@/lib/chatLogic";
 import { CompleteAnswerResponseSchema } from "@/lib/chatLogic";
 import { ResponseCard } from "./response";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getChat } from "@/server/chat/getChat";
 
 const MAX_CHARS: number = 500;
 const SHOW_COUNTER_THRESHOLD: number = 400;
@@ -30,14 +30,13 @@ type Message = {
 };
 
 export function ChatForm(): JSX.Element {
-  const [sessionId, setSessionId] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  console.log(isExpanded);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -87,7 +86,6 @@ export function ChatForm(): JSX.Element {
       });
       return;
     }
-
     setIsLoading(true);
 
     try {
@@ -101,12 +99,19 @@ export function ChatForm(): JSX.Element {
       setMessages((prevMessages) => [...prevMessages, optimisticResponse]);
 
       form.reset();
-      const res = await fetchCompleteAnswer({
+      const userIdObject = localStorage.getItem("chatUserData");
+      if (userIdObject === null) {
+        throw new Error("no user id found");
+      }
+      const userId: string = JSON.parse(userIdObject).id;
+      const chatSessionId = localStorage.getItem("chatSessionId");
+      const res = await getChat({
+        userChatId: userId,
         userMessage: values.message,
-        sessionId: sessionId || null,
+        sessionId: chatSessionId,
       });
       const validatedResponse = CompleteAnswerResponseSchema.parse(res);
-      setSessionId(validatedResponse.SessionId);
+      localStorage.setItem("chatSessionId", validatedResponse.SessionId);
 
       const aiMessage: Message = {
         type: "ai",
