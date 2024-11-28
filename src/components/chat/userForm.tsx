@@ -29,7 +29,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { addNewUser, NewChatUserResponse } from "@/server/chat/addNewUser";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+
 const occupations = [
   "Abogado",
   "Médico",
@@ -66,7 +66,6 @@ const MotionButton = motion(Button);
 
 export function UserProfileForm() {
   const { toast } = useToast();
-  const router = useRouter();
   const form = useForm<UserFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -114,7 +113,7 @@ export function UserProfileForm() {
         variant: "destructive",
       });
     } finally {
-      router.push("/chat");
+      location.reload();
     }
   }
 
