@@ -13,6 +13,7 @@ import { CompleteAnswerResponseSchema } from "@/lib/chatLogic";
 import { ResponseCard } from "./response";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getChat } from "@/server/chat/getChat";
+import { SkeletonResponse } from "./response";
 
 const MAX_CHARS: number = 500;
 const SHOW_COUNTER_THRESHOLD: number = 400;
@@ -24,15 +25,13 @@ const formSchema = z.object({
 });
 
 type Message = {
-  type: "user" | "ai";
+  type: "user" | "ai" | "thinking";
   content: string;
   response?: z.infer<typeof CompleteAnswerResponseSchema>;
 };
 
 export function ChatForm(): JSX.Element {
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -94,11 +93,11 @@ export function ChatForm(): JSX.Element {
       const userMessage: Message = { type: "user", content: values.message };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-      const optimisticResponse: Message = {
-        type: "ai",
+      const thinkingMessage: Message = {
+        type: "thinking",
         content: "Thinking...",
       };
-      setMessages((prevMessages) => [...prevMessages, optimisticResponse]);
+      setMessages((prevMessages) => [...prevMessages, thinkingMessage]);
 
       form.reset();
       const userIdObject = localStorage.getItem("chatUserData");
@@ -137,7 +136,9 @@ export function ChatForm(): JSX.Element {
     }
   }
 
-  function handleKeyDown(event: React.KeyboardEvent): void {
+  function handleKeyDown(
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ): void {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       form.handleSubmit(onSubmit)();
@@ -161,6 +162,8 @@ export function ChatForm(): JSX.Element {
               <div className="inline-block max-w-[70%] p-3 rounded-lg bg-primary text-primary-foreground">
                 {message.content}
               </div>
+            ) : message.type === "thinking" ? (
+              <SkeletonResponse />
             ) : message.response ? (
               <ResponseCard props={message.response} />
             ) : (

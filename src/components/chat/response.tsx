@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { convertS3UrlToBaseUrl } from "@/lib/s3UrlParser";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Skeleton } from "../ui/skeleton";
 
 export const S3_BASE_URL = "https://opd-peru.s3.us-east-1.amazonaws.com/";
 
@@ -160,6 +162,45 @@ export function ResponseCard({ props }: { props: CompleteAnswerResponse }) {
       <CardFooter className="border-t bg-muted/50 pt-4">
         <div className="w-full space-y-2">
           <Sources citations={props.Citations} />
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
+
+export function SkeletonResponse() {
+  return (
+    <Card className="w-full max-w-2xl shadow-md">
+      <CardContent className="pt-6 pb-4">
+        <div className="flex items-start space-x-4">
+          <Skeleton className="w-10 h-10 rounded-full">
+            <Avatar className="w-10 h-10">
+              <AvatarFallback>
+                <User className="w-6 h-6 text-muted-foreground" />
+              </AvatarFallback>
+            </Avatar>
+          </Skeleton>
+          <div className="flex-1 space-y-4">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="space-y-2">
+              <Skeleton className="h-20 w-full rounded-md" />
+              <Skeleton className="h-4 w-1/4" />
+            </div>
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="border-t bg-muted/50 pt-4">
+        <div className="w-full space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </div>
         </div>
       </CardFooter>
     </Card>

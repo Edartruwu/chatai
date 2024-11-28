@@ -12,6 +12,7 @@ import {
 import { NavItem, NavMain } from "./navmain";
 import { NavUser } from "./nav-user";
 import Image from "next/image";
+import { useSidebar } from "@/components/ui/sidebar";
 
 type UserData = {
   name?: string;
@@ -55,10 +56,13 @@ export function AdminSidebar({
   userData,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { userData: UserData }) {
+  const { open } = useSidebar();
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="flex flex-col items-center min-h-[70px] my-4 justify-center p-2 relative">
-        <Image src="/opdlogo.svg" fill alt="" className="min-w-[120px]" />
+        {open && (
+          <Image src="/opdlogo.svg" fill alt="" className="min-w-[120px]" />
+        )}
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />

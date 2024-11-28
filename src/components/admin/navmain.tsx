@@ -33,7 +33,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
               asChild
               isActive={item.isActive}
               tooltip={item.title}
-              className="min-h-[50px]"
+              className="min-h-[50px] min-w-[80px]"
             >
               <a href={item.url}>
                 {item.icon && (
