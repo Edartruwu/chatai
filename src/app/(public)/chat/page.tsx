@@ -3,6 +3,8 @@ import { ChatForm } from "@/components/chat/chat";
 import { UserProfileForm } from "@/components/chat/userForm";
 import { MainLayout } from "@/components/mainLayout";
 
+export const dynamic = "force-dynamic";
+
 export default function Page() {
   const chatUser: string | null = localStorage.getItem("chatUserData");
   if (!chatUser) {
