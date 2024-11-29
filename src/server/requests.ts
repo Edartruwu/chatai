@@ -6,7 +6,7 @@ import { BASE_URL } from "@/lib/url";
 const AUTH_SESSION_COOKIE = "auth_session";
 const OAUTH_STATE_COOKIE = "oauth_state";
 
-async function getCookies(): Promise<{
+export async function getCookies(): Promise<{
   authSession: string;
   oauthState: string;
 }> {

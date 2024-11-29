@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteEmail } from "@/server/whitelist/deleteWhitelist";
+import { deleteWhitelist } from "@/server/whitelist/deleteWhitelist";
 import { useToast } from "@/hooks/use-toast";
 import { AddUserModal } from "./addUser";
 import { Input } from "@/components/ui/input";
@@ -50,11 +50,10 @@ export function WhitelistManager({
 
   async function handleDelete(): Promise<void> {
     const emailsToDelete = Array.from(selectedEmails);
-
     try {
       const results: DeleteEmailResult[] = await Promise.all(
         emailsToDelete.map(function (email: Email): Promise<DeleteEmailResult> {
-          return deleteEmail(email);
+          return deleteWhitelist(email);
         }),
       );
 
@@ -92,6 +91,7 @@ export function WhitelistManager({
         description: "An unexpected error occurred while deleting emails.",
         variant: "destructive",
       });
+    } finally {
     }
   }
 
@@ -110,14 +110,14 @@ export function WhitelistManager({
             disabled={selectedEmails.size === 0}
             variant="destructive"
           >
-            Delete Selected
+            Eliminar de la lista
           </Button>
         </div>
       </div>
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search emails..."
+          placeholder="Buscar emails..."
           value={searchTerm}
           onChange={function (e: React.ChangeEvent<HTMLInputElement>): void {
             setSearchTerm(e.target.value);
@@ -128,7 +128,7 @@ export function WhitelistManager({
       <Table className="min-w-[600px]">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px]">Select</TableHead>
+            <TableHead className="w-[50px]">Seleccionar</TableHead>
             <TableHead>Email</TableHead>
           </TableRow>
         </TableHeader>

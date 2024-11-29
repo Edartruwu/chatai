@@ -12,7 +12,7 @@ interface MultipleFileUploadProps {
   maxFiles?: number;
 }
 
-export default function Component({
+export default function MultipleFileUpload({
   accept = "*",
   maxFiles = 1000,
 }: MultipleFileUploadProps = {}) {
@@ -93,6 +93,7 @@ export default function Component({
 
       if (urls.length > 0) {
         setUploadSuccess(true);
+        location.reload();
       }
     }
   }

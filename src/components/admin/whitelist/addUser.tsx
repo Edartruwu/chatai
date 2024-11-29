@@ -55,6 +55,7 @@ function AddUserModal() {
       });
     } finally {
       await form.reset();
+      location.reload();
     }
   }
   return (
