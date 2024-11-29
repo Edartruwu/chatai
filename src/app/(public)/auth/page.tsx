@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BASE_URL } from "@/lib/url";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -10,29 +11,14 @@ export default function Page() {
     <main className="flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 h-screen w-screen">
       <Card className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 shadow-lg rounded-2xl">
         <div className="text-center space-y-2">
-          <div className="flex justify-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-              <svg
-                className="w-12 h-12 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                />
-              </svg>
-            </div>
+          <div className="flex justify-center py-4">
+            <Image src="/opdlogo.svg" alt="" width={200} height={200} />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome Back
+            Bienvenido!
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Sign in to your account to continue
+            Ingresa a tu cuenta para poder continuar
           </p>
         </div>
         <div className="pt-4">
@@ -60,24 +46,25 @@ export default function Page() {
                   fill="#EA4335"
                 />
               </svg>
-              <span>Sign in with Google</span>
+              <span>Ingresa con Google</span>
             </Button>
           </Link>
         </div>
         <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-          By signing in, you agree to our{" "}
+          Ingresando aceptas a los {"  "}
           <Link
             href="/terms"
             className="text-blue-600 hover:underline dark:text-blue-400"
           >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
+            {"  "} Terminos de servicio
+            {"  "}
+          </Link>
+          y{"  "}
           <Link
             href="/privacy"
             className="text-blue-600 hover:underline dark:text-blue-400"
           >
-            Privacy Policy
+            {"  "} Politicas de privacidad
           </Link>
         </div>
       </Card>
