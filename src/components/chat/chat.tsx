@@ -14,6 +14,7 @@ import { ResponseCard } from "./response";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getChat } from "@/server/chat/getChat";
 import { SkeletonResponse } from "./response";
+import { PresentationCard } from "./response";
 
 const MAX_CHARS: number = 500;
 const SHOW_COUNTER_THRESHOLD: number = 400;
@@ -31,7 +32,7 @@ type Message = {
 };
 
 export function ChatForm(): JSX.Element {
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -146,34 +147,43 @@ export function ChatForm(): JSX.Element {
     }
   }
 
+  function handleSuggestedQuestion(question: string): void {
+    form.setValue("message", question);
+    form.handleSubmit(onSubmit)();
+  }
+
   return (
     <div className="w-full mx-auto flex flex-col h-screen">
       <ScrollArea
         className="flex-grow max-w-[800px] mx-auto w-full p-4"
         ref={scrollAreaRef}
       >
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`mb-4 ${
-              message.type === "user" ? "text-right" : "text-left"
-            }`}
-          >
-            {message.type === "user" ? (
-              <div className="inline-block max-w-[70%] p-3 rounded-lg bg-primary text-primary-foreground">
-                {message.content}
-              </div>
-            ) : message.type === "thinking" ? (
-              <SkeletonResponse />
-            ) : message.response ? (
-              <ResponseCard props={message.response} />
-            ) : (
-              <div className="inline-block max-w-[70%] p-3 rounded-lg bg-secondary text-secondary-foreground">
-                {message.content}
-              </div>
-            )}
-          </div>
-        ))}
+        {messages.length === 0 ? (
+          <PresentationCard onSuggestedQuestion={handleSuggestedQuestion} />
+        ) : (
+          messages.map((message, index) => (
+            <div
+              key={index}
+              className={`mb-4 ${
+                message.type === "user" ? "text-right" : "text-left"
+              }`}
+            >
+              {message.type === "user" ? (
+                <div className="inline-block max-w-[70%] p-3 rounded-lg bg-primary text-primary-foreground">
+                  {message.content}
+                </div>
+              ) : message.type === "thinking" ? (
+                <SkeletonResponse />
+              ) : message.response ? (
+                <ResponseCard props={message.response} />
+              ) : (
+                <div className="inline-block max-w-[70%] p-3 rounded-lg bg-secondary text-secondary-foreground">
+                  {message.content}
+                </div>
+              )}
+            </div>
+          ))
+        )}
         <div ref={bottomRef} />
       </ScrollArea>
       <div className="w-full max-w-[800px] mx-auto px-4 mb-8">
@@ -192,7 +202,7 @@ export function ChatForm(): JSX.Element {
                       <Textarea
                         {...field}
                         ref={textareaRef}
-                        placeholder="Send a message..."
+                        placeholder="Consultar a Linko..."
                         className="resize-none overflow-y-auto transition-all duration-200 ease-in-out px-4 py-3 min-h-[52px] max-h-[200px] rounded-lg border-0 focus:ring-0 bg-transparent"
                         onFocus={() => setIsExpanded(true)}
                         onBlur={() => setIsExpanded(false)}

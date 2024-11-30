@@ -213,3 +213,53 @@ export function SkeletonResponse() {
     </Card>
   );
 }
+
+interface PresentationCardProps {
+  onSuggestedQuestion: (question: string) => void;
+}
+
+export function PresentationCard({
+  onSuggestedQuestion,
+}: PresentationCardProps): JSX.Element {
+  return (
+    <Card className="w-full max-w-2xl shadow-md">
+      <CardContent className="pt-4 pb-2 sm:pt-6 sm:pb-4">
+        <div className="flex items-center sm:items-start space-x-3 sm:space-x-4">
+          <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
+            <AvatarImage src="/zorrito.jpeg" alt="Linko Avatar" />
+            <AvatarFallback>
+              <User />
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="flex-1 space-y-2 sm:space-y-4">
+            <h2 className="text-lg sm:text-2xl font-bold leading-tight">
+              Hola soy Linko tu asistente del observatorio de plataformas peru
+            </h2>
+            <p className="text-sm sm:text-base">Puedes preguntarme sobre:</p>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="border-t bg-muted/50 pt-2 sm:pt-4">
+        <div className="w-full space-y-2">
+          {[
+            "¿Cuáles son las principales plataformas digitales en Perú?",
+            "¿Cómo afectan las plataformas digitales al empleo en Perú?",
+            "¿Qué regulaciones existen para las plataformas digitales en Perú?",
+          ].map((question, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className="w-full text-left justify-start text-xs sm:text-sm py-2 px-3 h-auto whitespace-normal"
+              onClick={() => onSuggestedQuestion(question)}
+            >
+              <span className="line-clamp-2 sm:line-clamp-none">
+                {question}
+              </span>
+            </Button>
+          ))}
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
