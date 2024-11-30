@@ -127,9 +127,9 @@ export default function MultipleFileUpload({
         />
         <Upload className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-2 text-sm text-gray-600">
-          Drag and drop files here, or click to select files
+          Arrastra y suelta archivos aqui o haz click y selecciona los archivos
         </p>
-        <p className="mt-1 text-xs text-gray-500">{`Up to ${maxFiles} file${maxFiles > 1 ? "s" : ""}`}</p>
+        <p className="mt-1 text-xs text-gray-500">{`Hasta ${maxFiles} archivo${maxFiles > 1 ? "s" : ""}`}</p>
       </div>
       {files.length > 0 && (
         <ScrollArea className="h-[240px]">
@@ -162,7 +162,21 @@ export default function MultipleFileUpload({
                     )}
                   </div>
                 )}
-                <p className="text-sm flex-grow truncate">{file.name}</p>
+                <p className="text-sm flex-grow truncate">
+                  {(() => {
+                    const maxLength = 15;
+                    const fileParts = file.name.split(".");
+                    const extension = fileParts.pop();
+                    const nameWithoutExtension = fileParts
+                      .join(".")
+                      .split(" ")
+                      .slice(0, 2)
+                      .join(" ");
+                    return nameWithoutExtension.length > maxLength
+                      ? `${nameWithoutExtension.slice(0, maxLength)}...${extension}`
+                      : `${nameWithoutExtension}.${extension}`;
+                  })()}
+                </p>
                 <Button
                   onClick={() => handleDelete(index)}
                   variant="destructive"
@@ -170,7 +184,7 @@ export default function MultipleFileUpload({
                   className="h-8 w-8"
                 >
                   <X className="h-4 w-4" />
-                  <span className="sr-only">Delete</span>
+                  <span className="sr-only">Borrar</span>
                 </Button>
               </div>
             ))}
@@ -183,14 +197,14 @@ export default function MultipleFileUpload({
           disabled={uploadState.isUploading || files.length === 0}
           className="w-full"
         >
-          {uploadState.isUploading ? "Uploading..." : "Upload all"}
+          {uploadState.isUploading ? "Subiendo..." : "Subir todos los archivos"}
         </Button>
       )}
       {uploadState.isUploading && (
         <div className="space-y-2">
           <Progress value={fakeProgress} className="w-full" />
           <p className="text-sm text-center text-gray-600">
-            Uploading files... {fakeProgress}%
+            Subiendo archivos... {fakeProgress}%
           </p>
         </div>
       )}
@@ -200,7 +214,7 @@ export default function MultipleFileUpload({
       {uploadSuccess && (
         <div className="text-center">
           <p className="text-green-500 font-semibold">
-            Files uploaded successfully!
+            Archivos subidos correctamente!
           </p>
         </div>
       )}

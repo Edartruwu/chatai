@@ -51,7 +51,7 @@ function Source({
           prefetch={true}
           className="inline-flex items-center text-xs text-primary hover:underline mt-2"
         >
-          View source <ExternalLink className="ml-1 h-3 w-3" />
+          Ver fuente <ExternalLink className="ml-1 h-3 w-3" />
         </Link>
       )}
     </div>
@@ -62,7 +62,7 @@ function Source({
       <Popover>
         <PopoverTrigger asChild>
           <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-            <MessageCircle className="mr-1 h-3 w-3" /> Source
+            <MessageCircle className="mr-1 h-3 w-3" /> Fuente
           </Badge>
         </PopoverTrigger>
         <PopoverContent className="w-80">{content}</PopoverContent>
@@ -75,7 +75,7 @@ function Source({
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge variant="outline" className="cursor-help hover:bg-accent">
-            <MessageCircle className="mr-1 h-3 w-3" /> Source
+            <MessageCircle className="mr-1 h-3 w-3" /> Fuente
           </Badge>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="w-80">

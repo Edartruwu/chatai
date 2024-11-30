@@ -40,7 +40,7 @@ function SyncButton() {
         }
       }}
     >
-      Syncroniza <FolderSyncIcon />
+      Sincronizar archivos <FolderSyncIcon />
     </Button>
   );
 }
@@ -50,7 +50,7 @@ function UploadContent() {
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>Sube nuevas fuentes de dato </CardTitle>
+          <CardTitle>Sube nuevas fuentes de conocimiento</CardTitle>
           <CardDescription>
             haz click o arrastra documentos para subirlos
           </CardDescription>

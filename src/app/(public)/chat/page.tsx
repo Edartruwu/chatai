@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChatForm } from "@/components/chat/chat";
 import { UserProfileForm } from "@/components/chat/userForm";
 import { MainLayout } from "@/components/mainLayout";
+import { ChatHelpCircle } from "@/components/chat/deleteData";
 
 export default function Page() {
   const [chatUser, setChatUser] = useState<string | null>(null);
@@ -35,6 +36,7 @@ export default function Page() {
 
   return (
     <MainLayout>
+      <ChatHelpCircle />
       <ChatForm />
     </MainLayout>
   );
