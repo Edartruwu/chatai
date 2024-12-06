@@ -68,5 +68,14 @@
     "emailToAdd": "Email to add",
     "emailPlaceholder": "me@example.com",
     "emailDescription": "Add the email you want to be an admin"
+  },
+  "chartbar": {
+    "cardTitle": "Chat Usage - Bar Chart",
+    "cardDescription": "Demonstrates total chat usage for the last month, day by day.",
+    "chatUsage": "Chat Usage:",
+    "totalQueries": "Total Queries",
+    "activeUsers": "Active Users",
+    "shortMonth": "{{month}} {{day}}",
+    "fullDate": "{{month}} {{day}}, {{year}}"
   }
 }

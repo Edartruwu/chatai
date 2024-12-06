@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -5,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getStatistics } from "@/server/statistics/getStatistics";
 
 export interface StatisticCardProps {
   title: string;
@@ -24,7 +28,7 @@ function getStatistic(value: number | string): string {
   throw new Error("Invalid value type");
 }
 
-function StatisticCard(props: StatisticCardProps) {
+function StatisticCard(props: StatisticCardProps): React.ReactElement {
   const { title, description, statistic, prefix, suffix } = props;
 
   return (
@@ -51,16 +55,66 @@ function StatisticCard(props: StatisticCardProps) {
 }
 
 interface StatisticsRowProps {
-  statistics: StatisticCardProps[];
+  initialStatistics?: StatisticCardProps[];
 }
 
-function StatisticsRow(props: StatisticsRowProps) {
-  const { statistics } = props;
+function StatisticsRow(props: StatisticsRowProps): React.ReactElement {
+  const { initialStatistics } = props;
+  const [statistics, setStatistics] = useState<StatisticCardProps[]>(
+    initialStatistics || [],
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(!initialStatistics);
+
+  useEffect(
+    function fetchStatisticsEffect() {
+      async function fetchStatistics(): Promise<void> {
+        try {
+          const now: Date = new Date();
+          const startDate: string = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1,
+          )
+            .toISOString()
+            .split("T")[0];
+          const endDate: string = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0,
+          )
+            .toISOString()
+            .split("T")[0];
+          const data: StatisticCardProps[] = await getStatistics(
+            startDate,
+            endDate,
+          );
+          setStatistics(data);
+        } catch (error) {
+          console.error("Failed to fetch statistics:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      if (!initialStatistics) {
+        fetchStatistics();
+      }
+    },
+    [initialStatistics],
+  );
+
+  if (isLoading) {
+    return <div>Loading statistics...</div>;
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {statistics.map((statistic, index) => (
-        <StatisticCard key={index} {...statistic} />
-      ))}
+      {statistics.map(function renderStatisticCard(
+        statistic: StatisticCardProps,
+        index: number,
+      ): React.ReactElement {
+        return <StatisticCard key={index} {...statistic} />;
+      })}
     </div>
   );
 }
