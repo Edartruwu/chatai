@@ -2,18 +2,25 @@
 import { ChartDataItem } from "@/components/admin/statistics/charts/monthtly";
 import { serverGET } from "../requests";
 
+interface DailyAnalyticsEntry {
+  date: string;
+  count: number;
+}
+
+interface AnalyticsResponse {
+  data: DailyAnalyticsEntry[];
+}
+
 export async function getChartBarData(
   startDate: string,
   endDate: string,
 ): Promise<ChartDataItem[]> {
   try {
-    let daily: any;
-    let interactions: any;
-    [daily, interactions] = await Promise.allSettled([
-      serverGET(
+    const [daily, interactions] = await Promise.allSettled([
+      serverGET<AnalyticsResponse>(
         `/analytics/daily/users?start_date=${startDate}&end_date=${endDate}`,
       ),
-      serverGET(
+      serverGET<AnalyticsResponse>(
         `/analytics/daily/interactions?start_date=${startDate}&end_date=${endDate}`,
       ),
     ]);
