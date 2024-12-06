@@ -18,8 +18,10 @@ import { FolderSyncIcon, Upload } from "lucide-react";
 import MultipleFileUpload from "../upload/uploadMany";
 import { syncKB } from "@/server/syncButton";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 
 function SyncButton() {
+  const t = useTranslations("content");
   const { toast } = useToast();
   return (
     <Button
@@ -27,9 +29,8 @@ function SyncButton() {
         try {
           await syncKB();
           toast({
-            title: "Base de datos actualizada!",
-            description:
-              "Tu base de datos ahora contiene las nuevas fuentes de información",
+            title: t("syncTitle"),
+            description: t("syncDescription"),
           });
         } catch (error) {
           console.error(`${JSON.stringify(error)}`);
@@ -40,20 +41,19 @@ function SyncButton() {
         }
       }}
     >
-      Sincronizar archivos <FolderSyncIcon />
+      {t("syncButton")} <FolderSyncIcon />
     </Button>
   );
 }
 
 function UploadContent() {
+  const t = useTranslations("content");
   return (
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>Sube nuevas fuentes de conocimiento</CardTitle>
-          <CardDescription>
-            haz click o arrastra documentos para subirlos
-          </CardDescription>
+          <CardTitle>{t("uploadContentTitle")}</CardTitle>
+          <CardDescription>{t("uploadContentDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <MultipleFileUpload />
@@ -64,11 +64,12 @@ function UploadContent() {
 }
 
 function UploadContentModal() {
+  const t = useTranslations("content");
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button>
-          Subir contenido <Upload />
+          {t("uploadContentModal")} <Upload />
         </Button>
       </DialogTrigger>
       <DialogContent>

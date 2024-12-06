@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
 
 interface DataTableProps<TData extends { id: number }> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +42,7 @@ export function DataTable<TData extends { id: number }>({
   pageIndex,
   onPageChange,
 }: DataTableProps<TData>) {
+  const t = useTranslations("datatable");
   const table = useReactTable({
     data,
     columns,
@@ -83,7 +85,7 @@ export function DataTable<TData extends { id: number }>({
     <div style={{ width }} className="max-w-full overflow-hidden">
       <div className="flex flex-col sm:flex-row items-center py-4 gap-4">
         <Input
-          placeholder="Busca por nombre..."
+          placeholder={`${t("search")}`}
           value={
             (table.getColumn("filename")?.getFilterValue() as string) ?? ""
           }
@@ -146,7 +148,7 @@ export function DataTable<TData extends { id: number }>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Sin resultados.
+                  {t("noResult")}
                 </TableCell>
               </TableRow>
             )}
@@ -160,7 +162,7 @@ export function DataTable<TData extends { id: number }>({
           onClick={handlePreviousPage}
           disabled={pageIndex === 0}
         >
-          previo
+          {t("previous")}
         </Button>
         <Button
           variant="outline"
@@ -168,7 +170,7 @@ export function DataTable<TData extends { id: number }>({
           onClick={handleNextPage}
           disabled={pageIndex === pageCount - 1}
         >
-          siguiente
+          {t("next")}
         </Button>
       </div>
     </div>

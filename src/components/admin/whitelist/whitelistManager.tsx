@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AddUserModal } from "./addUser";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type Email = string;
 
@@ -35,6 +36,7 @@ export function WhitelistManager({
   const [selectedEmails, setSelectedEmails] = useState<Set<Email>>(new Set());
   const [searchTerm, setSearchTerm] = useState<string>("");
   const { toast } = useToast();
+  const t = useTranslations("whitelist");
 
   function handleCheckboxChange(email: Email): void {
     setSelectedEmails(function (prev: Set<Email>): Set<Email> {
@@ -73,22 +75,22 @@ export function WhitelistManager({
 
       if (successCount > 0) {
         toast({
-          title: "Emails deleted",
-          description: `${successCount} email(s) have been removed from the whitelist.`,
+          title: t("emailsDeletedTitle"),
+          description: t("emailsDeletedDescription", { count: successCount }),
         });
       }
       if (failCount > 0) {
         toast({
-          title: "Error",
-          description: `Failed to delete ${failCount} email(s).`,
+          title: t("errorTitle"),
+          description: t("errorDeleteDescription", { count: failCount }),
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error deleting emails:", error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred while deleting emails.",
+        title: t("errorTitle"),
+        description: t("unexpectedErrorDescription"),
         variant: "destructive",
       });
     } finally {
@@ -102,7 +104,9 @@ export function WhitelistManager({
   return (
     <div className="space-y-6 p-6 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">Email Whitelist</h1>
+        <h1 className="text-3xl font-bold text-gray-800">
+          {t("emailWhitelist")}
+        </h1>
         <div className="space-x-4">
           <AddUserModal />
           <Button
@@ -110,14 +114,14 @@ export function WhitelistManager({
             disabled={selectedEmails.size === 0}
             variant="destructive"
           >
-            Eliminar de la lista
+            {t("removeFromList")}
           </Button>
         </div>
       </div>
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Buscar emails..."
+          placeholder={t("searchEmails")}
           value={searchTerm}
           onChange={function (e: React.ChangeEvent<HTMLInputElement>): void {
             setSearchTerm(e.target.value);
@@ -128,8 +132,8 @@ export function WhitelistManager({
       <Table className="min-w-[600px]">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px]">Seleccionar</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead className="w-[50px]">{t("select")}</TableHead>
+            <TableHead>{t("email")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -160,7 +164,7 @@ export function WhitelistManager({
       </Table>
       {filteredWhitelist.length === 0 && (
         <div className="text-center text-gray-500 py-4">
-          No emails found in the whitelist.
+          {t("noEmailsFound")}
         </div>
       )}
     </div>

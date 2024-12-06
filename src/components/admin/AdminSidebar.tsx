@@ -1,6 +1,5 @@
 "use client";
 import * as React from "react";
-import { Bot, CodeXml, FileUserIcon, Home } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,7 +8,7 @@ import {
   SidebarTrigger,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { NavItem, NavMain } from "./navmain";
+import { NavMain } from "./navmain";
 import { NavUser } from "./nav-user";
 import Image from "next/image";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -20,42 +19,12 @@ type UserData = {
   avatar?: string;
 };
 
-const navMain: NavItem[] = [
-  {
-    title: "Home",
-    url: "/admin",
-    icon: Home,
-    iconClassName: "min-w-[25px] min-h-[25px]",
-    isActive: true,
-  },
-  {
-    title: "Modifica el contenido",
-    url: "/admin/content",
-    icon: Bot,
-    iconClassName: "min-w-[25px] min-h-[25px]",
-    isActive: true,
-  },
-  {
-    title: "Admin Whitelist",
-    url: "/admin/whitelist",
-    icon: FileUserIcon,
-    iconClassName: "min-w-[25px] min-h-[25px]",
-    isActive: true,
-  },
-
-  {
-    title: "Creador de Iframes",
-    url: "/admin/iframes",
-    icon: CodeXml,
-    iconClassName: "min-w-[25px] min-h-[25px]",
-    isActive: true,
-  },
-];
-
 export function AdminSidebar({
   userData,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { userData: UserData }) {
+}: React.ComponentProps<typeof Sidebar> & {
+  userData: UserData;
+}) {
   const { open } = useSidebar();
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -65,7 +34,7 @@ export function AdminSidebar({
         )}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMain} />
+        <NavMain />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

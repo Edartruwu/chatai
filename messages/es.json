@@ -1,0 +1,71 @@
+{
+  "sidebar": {
+    "home": "Home",
+    "content": "Modifica el contenido",
+    "whitelist": "Admin Whitelist",
+    "iframes": "Creador de iframes"
+  },
+  "logout": {
+    "button": "Cerrar Sesión",
+    "message": "Sesión cerrada correctamente"
+  },
+  "content": {
+    "syncTitle": "Base de datos actualizada!",
+    "syncDescription": "Tu base de datos ahora contiene las nuevas fuentes de información",
+    "syncButton": "Sincronizar archivos",
+    "uploadContentTitle": "Sube nuevas fuentes de conocimiento",
+    "uploadContentDescription": "haz click o arrastra documentos para subirlos",
+    "uploadContentModal": "Subir Contenido",
+    "uploadManyTitle": "Arrastra y suelta archivos aqui o haz click y selecciona los archivos",
+    "first": "Hasta",
+    "second": "archivo",
+    "deleteButton": "Borrar",
+    "uploadAll": "Subir todos los archivos",
+    "uploading": "Subiendo...",
+    "fakeProgress": "Subiendo archivos...",
+    "success": "Archivos subidos correctamente!"
+  },
+  "s3Table": {
+    "loading": "Cargando...",
+    "error": "Error: ",
+    "noData": "No hay datos disponibles.",
+    "fetchFailed": "No se pudo obtener los datos. Por favor, inténtalo de nuevo.",
+    "deleteSuccess": "Todos los objetos se eliminaron correctamente",
+    "deleteFailed": "No se pudo eliminar algunos o todos los objetos"
+  },
+  "datatable": {
+    "selectAll": "Seleccionar todo",
+    "selectRow": "Selecionar columna",
+    "filename": "Nombre del archivo",
+    "s3Key": "S3 Key",
+    "uploadedBy": "Subido por:",
+    "search": "Busca por nombre...",
+    "deleteSelected": "Borra las seleccionadas",
+    "noResult": "Sin resultados",
+    "previous": "previo",
+    "next": "siguiente"
+  },
+  "whitelist": {
+    "emailWhitelist": "Whitelist de emails",
+    "removeFromList": "Eliminar de la lista",
+    "searchEmails": "Buscar correos electrónicos...",
+    "select": "Seleccionar",
+    "email": "Correo electrónico",
+    "noEmailsFound": "No se encontraron correos electrónicos en la lista blanca.",
+    "emailsDeletedTitle": "Correos electrónicos eliminados",
+    "emailsDeletedDescription": "Se han eliminado {count} correo(s) electrónico(s) de la lista blanca.",
+    "errorTitle": "Error",
+    "errorDeleteDescription": "No se pudo eliminar {count} correo(s) electrónico(s).",
+    "unexpectedErrorDescription": "Ocurrió un error inesperado al eliminar los correos electrónicos.",
+    "invalidEmail": "Añade un email válido",
+    "adminAddedTitle": "Admin añadido correctamente",
+    "adminAddedDescription": "Nuevo admin con email {email} ha sido añadido",
+    "errorDescription": "Error: {error}",
+    "addAdmin": "Añade un admin",
+    "addNewAdmin": "Añade un nuevo admin",
+    "addNewAdminDescription": "Añade una nueva persona para que pueda acceder al dashboard. Esta persona podrá subir y ver las fuentes de dato existentes y tendrá acceso completo al dashboard.",
+    "emailToAdd": "Email a añadir",
+    "emailPlaceholder": "yo@ejemplo.com",
+    "emailDescription": "Añade el email que quieres que sea admin"
+  }
+}

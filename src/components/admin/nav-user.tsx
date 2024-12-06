@@ -21,6 +21,7 @@ import { Button } from "../ui/button";
 import { logout } from "@/lib/userCurl";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function NavUser({
   user,
@@ -34,6 +35,7 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { toast } = useToast();
+  const t = useTranslations("logout");
 
   const extractedName = user.name || user.email.match(/^[^@]+/)?.[0] || "";
   return (
@@ -88,7 +90,7 @@ export function NavUser({
                   try {
                     logout();
                     router.push("/");
-                    toast({ title: "Sessión cerrada correctamente" });
+                    toast({ title: t("message") });
                   } catch (error) {
                     toast({
                       description: `${JSON.stringify(error)}`,
@@ -99,7 +101,7 @@ export function NavUser({
                 }}
               >
                 <LogOut />
-                Log out
+                {t("button")}
               </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>

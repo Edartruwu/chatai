@@ -180,6 +180,7 @@ export function UserProfileForm() {
                       type="number"
                       placeholder="Ingresa tu edad"
                       min={1}
+                      max={100}
                       {...field}
                       onChange={(e) => {
                         const value =

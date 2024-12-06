@@ -1,0 +1,72 @@
+{
+  "sidebar": {
+    "home": "Home",
+    "content": "Edit Content",
+    "whitelist": "Admin Whitelist",
+    "iframes": "Iframe Creator"
+  },
+  "logout": {
+    "button": "Log out",
+    "message": "Session closed succesfully"
+  },
+  "content": {
+    "syncTitle": "Database Updated!",
+    "syncDescription": "Your database now contains the new information sources.",
+    "syncButton": "Sync Files",
+    "uploadContentTitle": "Upload New Knowledge Sources",
+    "uploadContentDescription": "Click or drag and drop documents to upload.",
+    "uploadContentModal": "Upload Content",
+    "uploadManyTitle": "Drag and drop files here or click to select files.",
+    "first": "Up to",
+    "second": "file",
+    "deleteButton": "Delete",
+    "uploadAll": "Upload All Files",
+    "uploading": "Uploading...",
+    "fakeProgress": "Uploading files...",
+    "success": "Files uploaded successfully!"
+  },
+  "s3Table": {
+    "loading": "Loading...",
+    "error": "Error: ",
+    "noData": "No data available.",
+    "fetchFailed": "Failed to fetch data. Please try again.",
+    "deleteSuccess": "All objects deleted successfully",
+    "deleteFailed": "Failed to delete some or all objects"
+  },
+
+  "datatable": {
+    "selectAll": "Select all",
+    "selectRow": "Select column",
+    "filename": "File name",
+    "s3Key": "S3 Key",
+    "uploadedBy": "Uploaded by:",
+    "search": "Search by name...",
+    "deleteSelected": "Delete selected",
+    "noResult": "No results",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "whitelist": {
+    "emailWhitelist": "Email Whitelist",
+    "removeFromList": "Remove from list",
+    "searchEmails": "Search emails...",
+    "select": "Select",
+    "email": "Email",
+    "noEmailsFound": "No emails found in the whitelist.",
+    "emailsDeletedTitle": "Emails deleted",
+    "emailsDeletedDescription": "{count} email(s) have been removed from the whitelist.",
+    "errorTitle": "Error",
+    "errorDeleteDescription": "Failed to delete {count} email(s).",
+    "unexpectedErrorDescription": "An unexpected error occurred while deleting emails.",
+    "invalidEmail": "Please enter a valid email",
+    "adminAddedTitle": "Admin added successfully",
+    "adminAddedDescription": "New admin with email {email} has been added",
+    "errorDescription": "Error: {error}",
+    "addAdmin": "Add an admin",
+    "addNewAdmin": "Add a new admin",
+    "addNewAdminDescription": "Add a new person who can access the dashboard. This person will be able to upload and view existing data sources and will have full access to the dashboard.",
+    "emailToAdd": "Email to add",
+    "emailPlaceholder": "me@example.com",
+    "emailDescription": "Add the email you want to be an admin"
+  }
+}

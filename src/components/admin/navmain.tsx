@@ -1,4 +1,11 @@
-import { type LucideIcon } from "lucide-react";
+"use client";
+import {
+  Bot,
+  CodeXml,
+  FileUserIcon,
+  Home,
+  type LucideIcon,
+} from "lucide-react";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -8,6 +15,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { useTranslations } from "next-intl";
 
 export interface NavItem {
   title: string;
@@ -23,7 +31,41 @@ export interface NavItem {
   }[];
 }
 
-export function NavMain({ items }: { items: NavItem[] }) {
+export function NavMain() {
+  const t = useTranslations("sidebar");
+
+  const items: NavItem[] = [
+    {
+      title: `${t("home")}`,
+      url: "/admin",
+      icon: Home,
+      iconClassName: "min-w-[25px] min-h-[25px]",
+      isActive: true,
+    },
+    {
+      title: `${t("content")}`,
+      url: "/admin/content",
+      icon: Bot,
+      iconClassName: "min-w-[25px] min-h-[25px]",
+      isActive: true,
+    },
+    {
+      title: `${t("whitelist")}`,
+      url: "/admin/whitelist",
+      icon: FileUserIcon,
+      iconClassName: "min-w-[25px] min-h-[25px]",
+      isActive: true,
+    },
+
+    {
+      title: `${t("iframes")}`,
+      url: "/admin/iframes",
+      icon: CodeXml,
+      iconClassName: "min-w-[25px] min-h-[25px]",
+      isActive: true,
+    },
+  ];
+
   return (
     <SidebarGroup>
       <SidebarMenu>

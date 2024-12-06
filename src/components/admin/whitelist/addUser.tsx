@@ -25,12 +25,15 @@ import {
 } from "@/components/ui/form";
 import { AddAdmin } from "@/server/addAdmin";
 import { useToast } from "@/hooks/use-toast";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Añade un email valido" }),
-});
+import { useTranslations } from "next-intl";
 
 function AddUserModal() {
+  const t = useTranslations("whitelist");
+
+  const formSchema = z.object({
+    email: z.string().email({ message: t("invalidEmail") }),
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,13 +47,13 @@ function AddUserModal() {
     try {
       await AddAdmin(values.email);
       toast({
-        title: "Admin añadido correctamente",
-        description: `nuevo admin con email ${values.email} ha sido añadido`,
+        title: t("adminAddedTitle"),
+        description: t("adminAddedDescription", { email: values.email }),
       });
     } catch (error) {
       console.error(JSON.stringify(error));
       toast({
-        description: `error ${JSON.stringify(error)}`,
+        description: t("errorDescription", { error: JSON.stringify(error) }),
         variant: "destructive",
       });
     } finally {
@@ -58,19 +61,16 @@ function AddUserModal() {
       location.reload();
     }
   }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Añade un admin</Button>
+        <Button>{t("addAdmin")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Añade un nuevo admin</DialogTitle>
-          <DialogDescription>
-            Añade una nueva persona para que pueda acceder al dashboard, esta
-            persona podrá subir y ver las fuentes de dato existentes y tendrá
-            acceso completo al dashboard.
-          </DialogDescription>
+          <DialogTitle>{t("addNewAdmin")}</DialogTitle>
+          <DialogDescription>{t("addNewAdminDescription")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -82,24 +82,22 @@ function AddUserModal() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email a añadir</FormLabel>
+                  <FormLabel>{t("emailToAdd")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="yo@inedge.tech"
+                      placeholder={t("emailPlaceholder")}
                       type="email"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Añade el email que quieres que sea admin
-                  </FormDescription>
+                  <FormDescription>{t("emailDescription")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit">Añadir admin</Button>
+            <Button type="submit">{t("addAdmin")}</Button>
           </form>
-        </Form>{" "}
+        </Form>
       </DialogContent>
     </Dialog>
   );

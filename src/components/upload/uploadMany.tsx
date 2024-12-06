@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { X, Upload } from "lucide-react";
 import { useUpload } from "@/hooks/use-upload";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslations } from "next-intl";
 
 interface MultipleFileUploadProps {
   accept?: string;
@@ -23,6 +24,7 @@ export default function MultipleFileUpload({
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
   const [fakeProgress, setFakeProgress] = useState<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("content");
 
   function handleFiles(selectedFiles: File[]): void {
     if (selectedFiles.length > 0) {
@@ -126,10 +128,8 @@ export default function MultipleFileUpload({
           ref={fileInputRef}
         />
         <Upload className="mx-auto h-12 w-12 text-gray-400" />
-        <p className="mt-2 text-sm text-gray-600">
-          Arrastra y suelta archivos aqui o haz click y selecciona los archivos
-        </p>
-        <p className="mt-1 text-xs text-gray-500">{`Hasta ${maxFiles} archivo${maxFiles > 1 ? "s" : ""}`}</p>
+        <p className="mt-2 text-sm text-gray-600">{t("uploadManyTitle")}</p>
+        <p className="mt-1 text-xs text-gray-500">{`${t("first")} ${maxFiles} ${t("second")}${maxFiles > 1 ? "s" : ""}`}</p>
       </div>
       {files.length > 0 && (
         <ScrollArea className="h-[240px]">
@@ -184,7 +184,7 @@ export default function MultipleFileUpload({
                   className="h-8 w-8"
                 >
                   <X className="h-4 w-4" />
-                  <span className="sr-only">Borrar</span>
+                  <span className="sr-only">{t("deleteButton")}</span>
                 </Button>
               </div>
             ))}
@@ -197,14 +197,14 @@ export default function MultipleFileUpload({
           disabled={uploadState.isUploading || files.length === 0}
           className="w-full"
         >
-          {uploadState.isUploading ? "Subiendo..." : "Subir todos los archivos"}
+          {uploadState.isUploading ? t("uploading") : t("uploadAll")}
         </Button>
       )}
       {uploadState.isUploading && (
         <div className="space-y-2">
           <Progress value={fakeProgress} className="w-full" />
           <p className="text-sm text-center text-gray-600">
-            Subiendo archivos... {fakeProgress}%
+            {t("fakeProgress")} {fakeProgress}%
           </p>
         </div>
       )}
@@ -213,9 +213,7 @@ export default function MultipleFileUpload({
       )}
       {uploadSuccess && (
         <div className="text-center">
-          <p className="text-green-500 font-semibold">
-            Archivos subidos correctamente!
-          </p>
+          <p className="text-green-500 font-semibold">{t("success")}</p>
         </div>
       )}
     </div>
