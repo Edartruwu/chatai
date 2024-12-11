@@ -189,6 +189,14 @@ function getSelectedMonth(): number {
   return new Date().getMonth();
 }
 
+function getSelectedYear(): number {
+  const selectedYear = localStorage.getItem("selectedYear");
+  if (!selectedYear) {
+    return 2024;
+  }
+  return selectedYear as unknown as number;
+}
+
 function StatisticsRow(props: StatisticsRowProps): React.ReactElement {
   const { initialStatistics, locale } = props;
   const [statistics, setStatistics] = useState<StatisticCardProps[]>(
@@ -201,7 +209,7 @@ function StatisticsRow(props: StatisticsRowProps): React.ReactElement {
       async function fetchStatistics(): Promise<void> {
         try {
           const selectedMonth: number = getSelectedMonth();
-          const year: number = new Date().getFullYear();
+          const year: number = getSelectedYear();
           const startDate: string = new Date(year, selectedMonth, 1)
             .toISOString()
             .split("T")[0];

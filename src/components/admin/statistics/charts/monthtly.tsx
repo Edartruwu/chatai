@@ -33,14 +33,19 @@ export interface ChartDataItem {
   requests: number;
   uniqueUsers: number;
 }
-
+function getSelectedYear(): number {
+  const selectedYear = localStorage.getItem("selectedYear");
+  if (!selectedYear) {
+    return 2024;
+  }
+  return selectedYear as unknown as number;
+}
 function MainBarChart({ locale }: { locale: string }): JSX.Element {
   const t = useTranslations("chartbar");
   const [chartData, setChartData] = useState<ChartDataItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
+  const currentYear: number = getSelectedYear();
   const selectedMonth = localStorage.getItem("selectedMonth");
 
   useEffect(
