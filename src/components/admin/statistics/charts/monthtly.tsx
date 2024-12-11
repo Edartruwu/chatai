@@ -17,13 +17,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useTranslations } from "next-intl";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { getChartBarData } from "@/server/statistics/getChartBarData";
 
@@ -38,19 +32,9 @@ function MainBarChart({ locale }: { locale: string }) {
   const [chartData, setChartData] = useState<ChartDataItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
-
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
-
-  useEffect(
-    function () {
-      setSelectedMonth(currentMonth.toString().padStart(2, "0"));
-    },
-    [currentMonth],
-  );
-
+  const selectedMonth = localStorage.getItem("selectedMonth");
   useEffect(
     function () {
       if (selectedMonth) {
@@ -121,36 +105,8 @@ function MainBarChart({ locale }: { locale: string }) {
     }
   }
 
-  function handleMonthChange(value: string): void {
-    setSelectedMonth(value);
-  }
-
   return (
     <>
-      <div className="flex flex-row items-center justify-start">
-        <p className="text-md min-w-[100px]">Ver data de:</p>
-        <Select onValueChange={handleMonthChange} value={selectedMonth}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select month" />
-          </SelectTrigger>
-          <SelectContent>
-            {Array.from({ length: 12 }, function (_, i): JSX.Element {
-              const month = (i + 1).toString().padStart(2, "0");
-              return (
-                <SelectItem key={month} value={month}>
-                  {new Date(currentYear, i).toLocaleString(
-                    getCorrectLocale(locale),
-                    {
-                      month: "long",
-                    },
-                  )}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-      </div>
-
       <Card>
         <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
           <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
