@@ -2,6 +2,13 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { useEffect, useMemo, useState } from "react";
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  parseISO,
+  startOfMonth,
+} from "date-fns";
 
 import {
   Card,
@@ -27,7 +34,7 @@ export interface ChartDataItem {
   uniqueUsers: number;
 }
 
-function MainBarChart({ locale }: { locale: string }) {
+function MainBarChart({ locale }: { locale: string }): JSX.Element {
   const t = useTranslations("chartbar");
   const [chartData, setChartData] = useState<ChartDataItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -35,6 +42,7 @@ function MainBarChart({ locale }: { locale: string }) {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const selectedMonth = localStorage.getItem("selectedMonth");
+
   useEffect(
     function () {
       if (selectedMonth) {
@@ -51,10 +59,36 @@ function MainBarChart({ locale }: { locale: string }) {
     const endDate = new Date(currentYear, parseInt(month), 0)
       .toISOString()
       .split("T")[0];
-    getChartBarData(startDate, endDate).then(function (data) {
-      setChartData(data);
-      setIsLoading(false);
-    });
+
+    getChartBarData(startDate, endDate)
+      .then(function (data: ChartDataItem[]) {
+        const allDates = eachDayOfInterval({
+          start: startOfMonth(parseISO(startDate)),
+          end: endOfMonth(parseISO(endDate)),
+        });
+
+        const fullChartData = allDates.map(function (date) {
+          const formattedDate = format(date, "yyyy-MM-dd");
+          const existingData = data.find(function (item) {
+            return item.date === formattedDate;
+          });
+
+          return (
+            existingData || {
+              date: formattedDate,
+              requests: 0,
+              uniqueUsers: 0,
+            }
+          );
+        });
+
+        setChartData(fullChartData);
+        setIsLoading(false);
+      })
+      .catch(function (err: Error) {
+        setError(err.message);
+        setIsLoading(false);
+      });
   }
 
   const chartConfig: ChartConfig = {

@@ -9,19 +9,38 @@ import {
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 
-export function MonthSelector({ locale }: { locale: string }) {
+interface MonthYearSelectorProps {
+  locale: string;
+}
+
+export function MonthSelector({ locale }: MonthYearSelectorProps): JSX.Element {
   const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>("");
 
   useEffect(function () {
     const storedMonth = localStorage.getItem("selectedMonth");
+    const storedYear = localStorage.getItem("selectedYear");
     if (storedMonth) {
       setSelectedMonth(storedMonth);
+    }
+    if (storedYear) {
+      setSelectedYear(storedYear);
+    } else {
+      const currentYear = new Date().getFullYear().toString();
+      setSelectedYear(currentYear);
+      localStorage.setItem("selectedYear", currentYear);
     }
   }, []);
 
   function handleMonthChange(value: string): void {
     setSelectedMonth(value);
     localStorage.setItem("selectedMonth", value);
+    window.location.reload();
+  }
+
+  function handleYearChange(value: string): void {
+    setSelectedYear(value);
+    localStorage.setItem("selectedYear", value);
     window.location.reload();
   }
 
@@ -39,9 +58,19 @@ export function MonthSelector({ locale }: { locale: string }) {
     }
   }
 
+  function getVerText(locale: string): string {
+    if (locale == "es") {
+      return "Ver data de:";
+    }
+    if (locale == "en") {
+      return "See data from:";
+    }
+    return "";
+  }
+
   return (
-    <div className="flex flex-row items-center justify-start">
-      <p className="text-md min-w-[100px]">Ver data de:</p>
+    <div className="flex flex-row items-center justify-start space-x-4">
+      <p className="text-md min-w-[100px]">{getVerText(locale)}</p>
       <Select onValueChange={handleMonthChange} value={selectedMonth}>
         <SelectTrigger>
           <SelectValue placeholder="Select month" />
@@ -57,6 +86,21 @@ export function MonthSelector({ locale }: { locale: string }) {
                     month: "long",
                   },
                 )}
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </Select>
+      <Select onValueChange={handleYearChange} value={selectedYear}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select year" />
+        </SelectTrigger>
+        <SelectContent>
+          {Array.from({ length: 5 }, function (_, i): JSX.Element {
+            const year = (currentYear + i).toString();
+            return (
+              <SelectItem key={year} value={year}>
+                {year}
               </SelectItem>
             );
           })}
