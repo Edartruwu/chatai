@@ -18,7 +18,11 @@ function CopyIframeButton() {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
 
-  const iframeCode = `<iframe  src="https://odp-chat.inedge.tech/integrations/widget"></iframe>`;
+  const iframeCode = `<iframe 
+  src="https://odp-api.inedge.tech/integrations/widget" 
+  style="position: fixed; bottom: 0; right: 0; width: 100%; height: 100%; border: none; z-index: 2147483647;">
+</iframe>
+`;
 
   const handleCopy = async () => {
     try {
