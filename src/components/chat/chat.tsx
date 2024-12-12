@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getChat } from "@/server/chat/getChat";
 import { SkeletonResponse } from "./response";
 import { PresentationCard } from "./response";
+import Link from "next/link";
 
 const MAX_CHARS: number = 500;
 const SHOW_COUNTER_THRESHOLD: number = 400;
@@ -240,6 +241,15 @@ export function ChatForm(): JSX.Element {
             )}
           </form>
         </Form>
+      </div>
+      <div className="text-center -mt-7">
+        <Link
+          href="https://inedge.tech"
+          className="text-xs gap-1 text-muted-foreground hover:underline flex flex-row items-center justify-center"
+        >
+          Powered by
+          <p className="text-xs text-muted-foreground underline">InEdge Labs</p>
+        </Link>
       </div>
     </div>
   );
