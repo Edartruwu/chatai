@@ -25,6 +25,7 @@ import Link from "next/link";
 import { convertS3UrlToBaseUrl } from "@/lib/s3UrlParser";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "../ui/skeleton";
+import { useTranslations } from "next-intl";
 
 export const S3_BASE_URL = "https://opd-peru.s3.us-east-1.amazonaws.com/";
 
@@ -35,6 +36,7 @@ function Source({
   citation: CompleteAnswerResponse["Citations"][0];
   isMobile: boolean;
 }) {
+  const t = useTranslations("response");
   const sourceUrl = citation.RetrievedReferences[0]?.Location.S3Location?.Uri;
   const sourceText = citation.RetrievedReferences[0]?.Content.Text;
 
@@ -51,7 +53,7 @@ function Source({
           prefetch={true}
           className="inline-flex items-center text-xs text-primary hover:underline mt-2"
         >
-          Ver fuente <ExternalLink className="ml-1 h-3 w-3" />
+          {t("view-source")} <ExternalLink className="ml-1 h-3 w-3" />
         </Link>
       )}
     </div>
@@ -62,7 +64,7 @@ function Source({
       <Popover>
         <PopoverTrigger asChild>
           <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-            <MessageCircle className="mr-1 h-3 w-3" /> Fuente
+            <MessageCircle className="mr-1 h-3 w-3" /> {t("source")}
           </Badge>
         </PopoverTrigger>
         <PopoverContent className="w-80">{content}</PopoverContent>
@@ -75,7 +77,7 @@ function Source({
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge variant="outline" className="cursor-help hover:bg-accent">
-            <MessageCircle className="mr-1 h-3 w-3" /> Fuente
+            <MessageCircle className="mr-1 h-3 w-3" /> {t("source")}
           </Badge>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="w-80">
@@ -91,6 +93,7 @@ function Sources({
 }: {
   citations: CompleteAnswerResponse["Citations"];
 }) {
+  const t = useTranslations();
   const [showAll, setShowAll] = useState(false);
   const isMobile = useMediaQuery("(max-width: 640px)");
   const maxVisible = 3;
@@ -109,10 +112,12 @@ function Sources({
             variant="outline"
             size="sm"
             className="h-6 px-2 text-xs font-normal"
-            onClick={() => setShowAll(true)}
+            onClick={function () {
+              setShowAll(true);
+            }}
           >
             <Plus className="mr-1 h-3 w-3" />
-            {remainingCount}
+            {t("see-more")} ({remainingCount})
           </Button>
         )}
       </div>
@@ -221,6 +226,7 @@ interface PresentationCardProps {
 export function PresentationCard({
   onSuggestedQuestion,
 }: PresentationCardProps): JSX.Element {
+  const t = useTranslations("response");
   return (
     <Card className="w-full max-w-2xl shadow-md">
       <CardContent className="pt-4 pb-2 sm:pt-6 sm:pb-4">
@@ -234,30 +240,30 @@ export function PresentationCard({
 
           <div className="flex-1 space-y-2 sm:space-y-4">
             <h2 className="text-lg sm:text-2xl font-bold leading-tight">
-              Hola soy Linko tu asistente del observatorio de plataformas peru
+              {t("hello-intro")}
             </h2>
-            <p className="text-sm sm:text-base">Puedes preguntarme sobre:</p>
+            <p className="text-sm sm:text-base">{t("ask-me-about")}</p>
           </div>
         </div>
       </CardContent>
       <CardFooter className="border-t bg-muted/50 pt-2 sm:pt-4">
         <div className="w-full space-y-2">
-          {[
-            "¿Cuáles son las principales plataformas digitales en Perú?",
-            "¿Cómo afectan las plataformas digitales al empleo en Perú?",
-            "¿Qué regulaciones existen para las plataformas digitales en Perú?",
-          ].map((question, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              className="w-full text-left justify-start text-xs sm:text-sm py-2 px-3 h-auto whitespace-normal"
-              onClick={() => onSuggestedQuestion(question)}
-            >
-              <span className="line-clamp-2 sm:line-clamp-none">
-                {question}
-              </span>
-            </Button>
-          ))}
+          {[t("question1"), t("question2"), t("question3")].map(
+            (question, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="w-full text-left justify-start text-xs sm:text-sm py-2 px-3 h-auto whitespace-normal"
+                onClick={function () {
+                  onSuggestedQuestion(question);
+                }}
+              >
+                <span className="line-clamp-2 sm:line-clamp-none">
+                  {question}
+                </span>
+              </Button>
+            ),
+          )}
         </div>
       </CardFooter>
     </Card>

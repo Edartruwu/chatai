@@ -1,4 +1,23 @@
 {
+  "mainChat": {
+    "placeholder": "Ask Linko...",
+    "sendMessage": "Send message",
+    "sendingMessage": "Sending message",
+    "poweredBy": "Powered by",
+    "errorTitle": "Error",
+    "errorDescription": "Message exceeds {maxChars} characters. Please shorten your message.",
+    "noUserIdError": "no user id found"
+  },
+  "response": {
+    "view-source": "View source",
+    "source": "Source",
+    "see-more": "See more",
+    "hello-intro": "Hello, I'm Linko, your assistant for the Peru platforms observatory",
+    "ask-me-about": "You can ask me about:",
+    "question1": "What are the main digital platforms in Peru?",
+    "question2": "How do digital platforms affect employment in Peru?",
+    "question3": "What regulations exist for digital platforms in Peru?"
+  },
   "sidebar": {
     "home": "Home",
     "content": "Edit Content",

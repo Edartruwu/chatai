@@ -1,4 +1,23 @@
 {
+  "mainChat": {
+    "placeholder": "Pregunta a Linko...",
+    "sendMessage": "Enviar mensaje",
+    "sendingMessage": "Enviando mensaje",
+    "poweredBy": "Desarrollado por",
+    "errorTitle": "Error",
+    "errorDescription": "El mensaje supera los {maxChars} caracteres. Por favor, acorte su mensaje.",
+    "noUserIdError": "no se encontró un ID de usuario"
+  },
+  "response": {
+    "view-source": "Ver fuente",
+    "source": "Fuente",
+    "see-more": "Ver más",
+    "hello-intro": "Hola soy Linko tu asistente del observatorio de plataformas peru",
+    "ask-me-about": "Puedes preguntarme sobre:",
+    "question1": "¿Cuáles son las principales plataformas digitales en Perú?",
+    "question2": "¿Cómo afectan las plataformas digitales al empleo en Perú?",
+    "question3": "¿Qué regulaciones existen para las plataformas digitales en Perú?"
+  },
   "sidebar": {
     "home": "Home",
     "content": "Modifica el contenido",

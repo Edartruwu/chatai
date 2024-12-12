@@ -16,6 +16,7 @@ import { getChat } from "@/server/chat/getChat";
 import { SkeletonResponse } from "./response";
 import { PresentationCard } from "./response";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const MAX_CHARS: number = 500;
 const SHOW_COUNTER_THRESHOLD: number = 400;
@@ -33,6 +34,7 @@ type Message = {
 };
 
 export function ChatForm(): JSX.Element {
+  const t = useTranslations("mainChat");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -85,7 +87,7 @@ export function ChatForm(): JSX.Element {
     if (isOverLimit) {
       toast({
         title: "Error",
-        description: `Message exceeds ${MAX_CHARS} characters. Please shorten your message.`,
+        description: t("errorDescription", { maxChars: MAX_CHARS }),
         variant: "destructive",
       });
       return;
@@ -105,7 +107,7 @@ export function ChatForm(): JSX.Element {
       form.reset();
       const userIdObject = localStorage.getItem("chatUserData");
       if (userIdObject === null) {
-        throw new Error("no user id found");
+        throw new Error(t("noUserIdError"));
       }
       const userId: string = JSON.parse(userIdObject).id;
       const chatSessionId = localStorage.getItem("chatSessionId");
@@ -203,7 +205,7 @@ export function ChatForm(): JSX.Element {
                       <Textarea
                         {...field}
                         ref={textareaRef}
-                        placeholder="Consultar a Linko..."
+                        placeholder={t("placeholder")}
                         className="resize-none overflow-y-auto transition-all duration-200 ease-in-out px-4 py-3 min-h-[52px] max-h-[200px] rounded-lg border-0 focus:ring-0 bg-transparent"
                         onFocus={() => setIsExpanded(true)}
                         onBlur={() => setIsExpanded(false)}
@@ -226,7 +228,7 @@ export function ChatForm(): JSX.Element {
                   <ArrowUp className="h-5 w-5" />
                 )}
                 <span className="sr-only">
-                  {isLoading ? "Sending message" : "Send message"}
+                  {isLoading ? t("sendingMessage") : t("sendMessage")}
                 </span>
               </Button>
             </div>
@@ -247,7 +249,7 @@ export function ChatForm(): JSX.Element {
           href="https://inedge.tech"
           className="text-xs gap-1 text-muted-foreground hover:underline flex flex-row items-center justify-center"
         >
-          Powered by
+          {t("poweredBy")}
           <p className="text-xs text-muted-foreground underline">InEdge Labs</p>
         </Link>
       </div>
