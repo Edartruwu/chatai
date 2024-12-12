@@ -47,7 +47,7 @@ export function ChatHelpCircle({
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full w-[60px] h-[60px] bg-primary text-primary-foreground hover:bg-primary/90"
+          className="rounded-full w-[25px] h-[25px] bg-primary text-primary-foreground hover:bg-primary/90"
           onClick={handleSettingsClick}
           aria-label={isButtonVisible ? "Hide settings" : "Show settings"}
         >

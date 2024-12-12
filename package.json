@@ -26,6 +26,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@tanstack/react-table": "^8.20.5",
     "class-variance-authority": "^0.7.1",
+    "clipboard-copy": "^4.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^11.12.0",
