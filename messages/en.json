@@ -1,4 +1,40 @@
 {
+  "userForm": {
+    "welcome": "Welcome to ODP-CHAT",
+    "formDescription": "Please complete your personal information to continue.",
+    "occupation": "Occupation",
+    "occupationPlaceholder": "Select your occupation",
+    "age": "How old are you?",
+    "agePlaceholder": "Enter your age",
+    "gender": "Gender",
+    "genderPlaceholder": "Select your gender",
+    "otherGender": "Specify your gender",
+    "otherGenderPlaceholder": "Enter your gender",
+    "location": "Where are you using the platform?",
+    "locationPlaceholder": "Enter your geographic location",
+    "submit": "Start!",
+    "invalidAge": "Invalid age",
+    "selectOccupation": "Please select an occupation.",
+    "selectGender": "Please select a gender.",
+    "welcome_toast": "Hello! Welcome to ODP-CHAT",
+    "error_toast": "An error occurred. Please try again.",
+    "occupations": {
+      "universityTeacher": "University Teacher",
+      "researcher": "Researcher",
+      "socialScienceProfessional": "Social Science Professional",
+      "journalist": "Journalist",
+      "universityStudent": "University Student",
+      "programmer": "Programmer",
+      "platformWorker": "Platform Worker",
+      "other": "Other"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "preferNotToSay": "Prefer not to say"
+    }
+  },
   "mainChat": {
     "placeholder": "Ask Linko...",
     "sendMessage": "Send message",

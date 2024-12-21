@@ -1,4 +1,6 @@
 "use client";
+
+import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,32 +32,35 @@ import { useToast } from "@/hooks/use-toast";
 import { addNewUser, NewChatUserResponse } from "@/server/chat/addNewUser";
 import { motion } from "framer-motion";
 
-const occupations = [
-  "Abogado",
-  "Médico",
-  "Ingeniero",
-  "Profesor",
-  "Diseñador",
-  "Contador",
-  "Arquitecto",
-  "Enfermero",
-  "Programador",
-  "Otro",
+const occupationKeys = [
+  "universityTeacher",
+  "researcher",
+  "socialScienceProfessional",
+  "journalist",
+  "universityStudent",
+  "programmer",
+  "platformWorker",
+  "other",
 ] as const;
 
-const genders = ["Masculino", "Femenino", "Otro", "Prefiero no decir"] as const;
+const genderKeys = ["male", "female", "other", "preferNotToSay"] as const;
 
 const formSchema = z.object({
   edad: z.coerce.number().min(1, {
-    message: "Edad no válida",
+    message: "invalidAge",
   }),
-  ocupacion: z.enum(occupations, {
-    errorMap: () => ({ message: "Por favor, selecciona una ocupación." }),
-  }),
-  genero: z.enum([...genders, ""], {
-    errorMap: () => ({ message: "Por favor, selecciona un género." }),
+  ocupacion: z
+    .union([z.enum(occupationKeys), z.string()])
+    .refine((val) => val !== "", {
+      message: "selectOccupation",
+    }),
+  genero: z.enum([...genderKeys, ""], {
+    errorMap: () => ({ message: "selectGender" }),
   }),
   otroGenero: z.string().optional(),
+  ubicacion: z.string().min(1, {
+    message: "Please enter your location",
+  }),
 });
 
 export type UserFormValues = z.infer<typeof formSchema>;
@@ -64,57 +69,65 @@ const MotionCard = motion(Card);
 const MotionCardContent = motion(CardContent);
 const MotionButton = motion(Button);
 
-export function UserProfileForm() {
+export function UserProfileForm(): JSX.Element {
+  const t = useTranslations("userForm");
   const { toast } = useToast();
   const form = useForm<UserFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       edad: undefined,
-      ocupacion: undefined,
+      ocupacion: "",
       genero: "",
       otroGenero: "",
+      ubicacion: "",
     },
   });
 
-  async function onSubmit(values: UserFormValues): Promise<void> {
-    try {
-      const res: NewChatUserResponse = await addNewUser(values);
-      const requiredFields: (keyof NewChatUserResponse)[] = [
-        "id",
-        "age",
-        "gender",
-        "ocupation",
-      ];
-      function isValidField(field: keyof NewChatUserResponse): boolean {
-        if (field === "age") {
-          return typeof res[field] === "number";
-        }
-        return typeof res[field] === "string";
-      }
-      let isValid = true;
-      for (let i = 0; i < requiredFields.length; i++) {
-        const field = requiredFields[i];
-        if (!isValidField(field)) {
-          isValid = false;
-          break;
-        }
-      }
-      if (isValid) {
-        localStorage.setItem("chatUserData", JSON.stringify(res));
-        toast({ title: "Hola! Bienvenido al ODP-CHAT" });
-      } else {
-        throw new Error(
-          "Response does not contain the required fields or they are of the wrong type.",
-        );
-      }
-    } catch (error) {
-      toast({
-        description: `${error}`,
-        variant: "destructive",
-      });
-    } finally {
-      location.reload();
-    }
+  function onSubmit(values: UserFormValues): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      addNewUser(values)
+        .then((res: NewChatUserResponse) => {
+          const requiredFields: (keyof NewChatUserResponse)[] = [
+            "id",
+            "age",
+            "gender",
+            "ocupation",
+          ];
+          function isValidField(field: keyof NewChatUserResponse): boolean {
+            if (field === "age") {
+              return typeof res[field] === "number";
+            }
+            return typeof res[field] === "string";
+          }
+          let isValid = true;
+          for (let i = 0; i < requiredFields.length; i++) {
+            const field = requiredFields[i];
+            if (!isValidField(field)) {
+              isValid = false;
+              break;
+            }
+          }
+          if (isValid) {
+            localStorage.setItem("chatUserData", JSON.stringify(res));
+            toast({ title: t("welcome_toast") });
+            resolve();
+          } else {
+            throw new Error(
+              "Response does not contain the required fields or they are of the wrong type.",
+            );
+          }
+        })
+        .catch((error) => {
+          toast({
+            description: t("error_toast"),
+            variant: "destructive",
+          });
+          reject(error);
+        })
+        .finally(() => {
+          location.reload();
+        });
+    });
   }
 
   return (
@@ -130,12 +143,10 @@ export function UserProfileForm() {
           animate={{ scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <CardTitle className="text-2xl font-bold">
-            Bienvenido a ODP-CHAT
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">{t("welcome")}</CardTitle>
         </motion.div>
         <CardDescription className="text-center">
-          Por favor, completa tu información personal para continuar.
+          {t("formDescription")}
         </CardDescription>
       </CardHeader>
       <MotionCardContent
@@ -150,21 +161,27 @@ export function UserProfileForm() {
               name="ocupacion"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ocupación</FormLabel>
+                  <FormLabel>{t("occupation")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona tu ocupación" />
+                        <SelectValue placeholder={t("occupationPlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {occupations.map((occupation) => (
-                        <SelectItem key={occupation} value={occupation}>
-                          {occupation}
+                      {occupationKeys.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {t(`occupations.${key}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  {field.value === "other" && (
+                    <Input
+                      placeholder={t("occupationPlaceholder")}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -174,11 +191,11 @@ export function UserProfileForm() {
               name="edad"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>¿Cuántos años tienes?</FormLabel>
+                  <FormLabel>{t("age")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Ingresa tu edad"
+                      placeholder={t("agePlaceholder")}
                       min={1}
                       max={100}
                       {...field}
@@ -201,17 +218,17 @@ export function UserProfileForm() {
               name="genero"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Género</FormLabel>
+                  <FormLabel>{t("gender")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona tu género" />
+                        <SelectValue placeholder={t("genderPlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {genders.map((gender) => (
-                        <SelectItem key={gender} value={gender}>
-                          {gender}
+                      {genderKeys.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {t(`genders.${key}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -220,7 +237,7 @@ export function UserProfileForm() {
                 </FormItem>
               )}
             />
-            {form.watch("genero") === "Otro" && (
+            {form.watch("genero") === "other" && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -232,9 +249,12 @@ export function UserProfileForm() {
                   name="otroGenero"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Especifica tu género</FormLabel>
+                      <FormLabel>{t("otherGender")}</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Ingresa tu género" />
+                        <Input
+                          {...field}
+                          placeholder={t("otherGenderPlaceholder")}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -242,13 +262,26 @@ export function UserProfileForm() {
                 />
               </motion.div>
             )}
+            <FormField
+              control={form.control}
+              name="ubicacion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("location")}</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder={t("locationPlaceholder")} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <MotionButton
               className="w-full"
               type="submit"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Empezar!
+              {t("submit")}
             </MotionButton>
           </form>
         </Form>

@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+//import { HelpCircle } from "@/components/help-circle";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

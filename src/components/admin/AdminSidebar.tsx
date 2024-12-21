@@ -12,6 +12,7 @@ import { NavMain } from "./navmain";
 import { NavUser } from "./nav-user";
 import Image from "next/image";
 import { useSidebar } from "@/components/ui/sidebar";
+import { HelpCircle } from "../help-circle";
 
 type UserData = {
   name?: string;
@@ -55,6 +56,7 @@ export function AdminLayout({
     <>
       <AdminSidebar userData={userData} />
       <main>
+        <HelpCircle />
         <SidebarTrigger />
         {children}
       </main>

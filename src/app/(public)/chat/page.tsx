@@ -5,6 +5,7 @@ import { ChatForm } from "@/components/chat/chat";
 import { UserProfileForm } from "@/components/chat/userForm";
 import { MainLayout } from "@/components/mainLayout";
 import { ChatHelpCircle } from "@/components/chat/deleteData";
+import { HelpCircle } from "@/components/help-circle";
 
 export default function Page() {
   const [chatUser, setChatUser] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export default function Page() {
   if (!chatUser) {
     return (
       <MainLayout>
+        <HelpCircle />
         <UserProfileForm />
       </MainLayout>
     );
