@@ -7,6 +7,7 @@ interface ChatUser {
   age: number;
   gender: string;
   ocupation: string;
+  location: string;
 }
 
 export interface NewChatUserResponse {
@@ -14,6 +15,7 @@ export interface NewChatUserResponse {
   age: number;
   gender: string;
   ocupation: string;
+  location: string;
 }
 
 export async function addNewUser(
@@ -24,6 +26,7 @@ export async function addNewUser(
       age: params.edad,
       gender: params.genero,
       ocupation: params.ocupacion,
+      location: params.location,
     };
 
     const res = await fetch(`${BASE_URL}/chat-users`, {

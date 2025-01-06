@@ -14,7 +14,7 @@ export async function deleteWhitelist(email: string) {
   };
 
   try {
-    const response = await fetch(`${BASE_URL}/users/whitelist`, {
+    const response = await fetch(`${BASE_URL}/users/d/whitelist`, {
       method: "DELETE",
       headers: headers,
       body: JSON.stringify({ email }),

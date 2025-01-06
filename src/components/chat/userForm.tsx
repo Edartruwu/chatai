@@ -58,7 +58,7 @@ const formSchema = z.object({
     errorMap: () => ({ message: "selectGender" }),
   }),
   otroGenero: z.string().optional(),
-  ubicacion: z.string().min(1, {
+  location: z.string().min(1, {
     message: "Please enter your location",
   }),
 });
@@ -79,11 +79,11 @@ export function UserProfileForm(): JSX.Element {
       ocupacion: "",
       genero: "",
       otroGenero: "",
-      ubicacion: "",
+      location: "",
     },
   });
 
-  function onSubmit(values: UserFormValues): Promise<void> {
+  async function onSubmit(values: UserFormValues): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       addNewUser(values)
         .then((res: NewChatUserResponse) => {
@@ -162,7 +162,22 @@ export function UserProfileForm(): JSX.Element {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("occupation")}</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={(value: string) => {
+                      if (value === "other") {
+                        field.onChange("");
+                      } else {
+                        field.onChange(value);
+                      }
+                    }}
+                    value={
+                      occupationKeys.includes(
+                        field.value as (typeof occupationKeys)[number],
+                      )
+                        ? field.value
+                        : "other"
+                    }
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder={t("occupationPlaceholder")} />
@@ -176,10 +191,17 @@ export function UserProfileForm(): JSX.Element {
                       ))}
                     </SelectContent>
                   </Select>
-                  {field.value === "other" && (
+                  {(field.value === "" ||
+                    !occupationKeys.includes(
+                      field.value as (typeof occupationKeys)[number],
+                    )) && (
                     <Input
                       placeholder={t("occupationPlaceholder")}
-                      onChange={(e) => field.onChange(e.target.value)}
+                      value={field.value}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        field.onChange(e.target.value);
+                      }}
+                      className="mt-2"
                     />
                   )}
                   <FormMessage />
@@ -264,7 +286,7 @@ export function UserProfileForm(): JSX.Element {
             )}
             <FormField
               control={form.control}
-              name="ubicacion"
+              name="location"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("location")}</FormLabel>
