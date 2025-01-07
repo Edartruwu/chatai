@@ -7,6 +7,7 @@ import {
   SelectItem,
   SelectContent,
 } from "@/components/ui/select";
+import { ExportDatabaseButton } from "@/components/exportDB";
 import { useState, useEffect } from "react";
 
 interface MonthYearSelectorProps {
@@ -106,6 +107,7 @@ export function MonthSelector({ locale }: MonthYearSelectorProps): JSX.Element {
           })}
         </SelectContent>
       </Select>
+      <ExportDatabaseButton />
     </div>
   );
 }
