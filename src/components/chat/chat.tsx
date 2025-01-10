@@ -78,7 +78,14 @@ export function ChatForm(): JSX.Element {
 
   useEffect(
     function scrollToBottom() {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      if (scrollAreaRef.current) {
+        const scrollableNode = scrollAreaRef.current.querySelector(
+          "[data-radix-scroll-area-viewport]",
+        );
+        if (scrollableNode) {
+          scrollableNode.scrollTop = scrollableNode.scrollHeight;
+        }
+      }
     },
     [messages],
   );
