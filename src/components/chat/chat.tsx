@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,8 +18,8 @@ import { PresentationCard } from "./response";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-const MAX_CHARS: number = 500;
-const SHOW_COUNTER_THRESHOLD: number = 400;
+const MAX_CHARS = 500;
+const SHOW_COUNTER_THRESHOLD = 400;
 
 const formSchema = z.object({
   message: z.string().min(2, {
@@ -33,143 +33,139 @@ type Message = {
   response?: z.infer<typeof CompleteAnswerResponseSchema>;
 };
 
+const MemoResponseCard = memo(ResponseCard);
+const MemoSkeletonResponse = memo(SkeletonResponse);
+const MemoPresentationCard = memo(PresentationCard);
+
 export function ChatForm(): JSX.Element {
   const t = useTranslations("mainChat");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      message: "",
-    },
+    defaultValues: { message: "" },
   });
 
-  const { toast } = useToast();
+  const messageLength = form.watch("message").length;
+  const showCounter = messageLength >= SHOW_COUNTER_THRESHOLD;
+  const isOverLimit = messageLength > MAX_CHARS;
 
-  const messageLength: number = form.watch("message").length;
-  const showCounter: boolean = messageLength >= SHOW_COUNTER_THRESHOLD;
-  const isOverLimit: boolean = messageLength > MAX_CHARS;
-
-  useEffect(
-    function adjustTextareaHeight() {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-        textareaRef.current.style.height = `${Math.min(
-          textareaRef.current.scrollHeight,
-          200,
-        )}px`;
-      }
-    },
-    [form.watch("message")],
-  );
-
-  useEffect(function loadStoredMessages() {
-    const storedMessages = localStorage.getItem("chatMessages");
-    if (storedMessages) {
-      setMessages(JSON.parse(storedMessages));
+  // Textarea height adjustment
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
+  }, [form.watch("message")]);
+
+  // Initial message load
+  useEffect(() => {
+    const storedMessages = localStorage.getItem("chatMessages");
+    if (storedMessages) setMessages(JSON.parse(storedMessages));
   }, []);
 
-  useEffect(
-    function scrollToBottom() {
-      if (scrollAreaRef.current) {
-        const scrollableNode = scrollAreaRef.current.querySelector(
-          "[data-radix-scroll-area-viewport]",
-        );
-        if (scrollableNode) {
-          scrollableNode.scrollTop = scrollableNode.scrollHeight;
-        }
+  // Scroll to bottom effect
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleKeyDown = useCallback(
+    function (event: React.KeyboardEvent<HTMLTextAreaElement>): void {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.handleSubmit(onSubmit)();
       }
     },
-    [messages],
+    [form.handleSubmit],
   );
 
-  async function onSubmit(values: z.infer<typeof formSchema>): Promise<void> {
-    if (isOverLimit) {
-      toast({
-        title: "Error",
-        description: t("errorDescription", { maxChars: MAX_CHARS }),
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsLoading(true);
-
-    try {
-      const userMessage: Message = { type: "user", content: values.message };
-      setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-      const thinkingMessage: Message = {
-        type: "thinking",
-        content: "Thinking...",
-      };
-      setMessages((prevMessages) => [...prevMessages, thinkingMessage]);
-
-      form.reset();
-      const userIdObject = localStorage.getItem("chatUserData");
-      if (userIdObject === null) {
-        throw new Error(t("noUserIdError"));
-      }
-      const userId: string = JSON.parse(userIdObject).id;
-      const chatSessionId = localStorage.getItem("chatSessionId");
-      const res = await getChat({
-        userChatId: userId,
-        userMessage: values.message,
-        sessionId: chatSessionId,
-      });
-      const validatedResponse = CompleteAnswerResponseSchema.parse(res);
-      localStorage.setItem("chatSessionId", validatedResponse.SessionId);
-
-      const aiMessage: Message = {
-        type: "ai",
-        content: validatedResponse.Output.Text,
-        response: validatedResponse,
-      };
-      setMessages((prevMessages) => [...prevMessages.slice(0, -1), aiMessage]);
-
-      localStorage.setItem(
-        "chatMessages",
-        JSON.stringify([...messages, userMessage, aiMessage]),
-      );
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `${JSON.stringify(error)}`,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  function handleKeyDown(
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
-  ): void {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
+  const handleSuggestedQuestion = useCallback(
+    function (question: string): void {
+      form.setValue("message", question);
       form.handleSubmit(onSubmit)();
-    }
-  }
+    },
+    [form.setValue, form.handleSubmit],
+  );
 
-  function handleSuggestedQuestion(question: string): void {
-    form.setValue("message", question);
-    form.handleSubmit(onSubmit)();
-  }
+  const onSubmit = useCallback(
+    async function (values: z.infer<typeof formSchema>): Promise<void> {
+      if (isOverLimit) {
+        toast({
+          title: "Error",
+          description: t("errorDescription", { maxChars: MAX_CHARS }),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+      const userMessage: Message = { type: "user", content: values.message };
+
+      try {
+        setMessages((prev) => {
+          const updated = [...prev, userMessage];
+          localStorage.setItem("chatMessages", JSON.stringify(updated));
+          return updated;
+        });
+
+        const thinkingMessage: Message = { type: "thinking", content: "" };
+        setMessages((prev) => {
+          const updated = [...prev, thinkingMessage];
+          localStorage.setItem("chatMessages", JSON.stringify(updated));
+          return updated;
+        });
+
+        form.reset();
+
+        const userIdObject = localStorage.getItem("chatUserData");
+        if (!userIdObject) throw new Error(t("noUserIdError"));
+
+        const userId = JSON.parse(userIdObject).id;
+        const chatSessionId = localStorage.getItem("chatSessionId");
+        const res = await getChat({
+          userChatId: userId,
+          userMessage: values.message,
+          sessionId: chatSessionId,
+        });
+
+        const validatedResponse = CompleteAnswerResponseSchema.parse(res);
+        localStorage.setItem("chatSessionId", validatedResponse.SessionId);
+
+        const aiMessage: Message = {
+          type: "ai",
+          content: validatedResponse.Output.Text,
+          response: validatedResponse,
+        };
+
+        setMessages((prev) => {
+          const updated = [...prev.slice(0, -1), aiMessage];
+          localStorage.setItem("chatMessages", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: `${error}`,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isOverLimit, toast, t, form.reset],
+  );
 
   return (
     <div className="w-full mx-auto flex flex-col h-screen">
-      <ScrollArea
-        className="flex-grow max-w-[800px] mx-auto w-full p-4"
-        ref={scrollAreaRef}
-      >
+      <ScrollArea className="flex-grow max-w-[800px] mx-auto w-full p-4">
         {messages.length === 0 ? (
-          <PresentationCard onSuggestedQuestion={handleSuggestedQuestion} />
+          <MemoPresentationCard onSuggestedQuestion={handleSuggestedQuestion} />
         ) : (
           messages.map((message, index) => (
             <div
@@ -183,9 +179,9 @@ export function ChatForm(): JSX.Element {
                   {message.content}
                 </div>
               ) : message.type === "thinking" ? (
-                <SkeletonResponse />
+                <MemoSkeletonResponse />
               ) : message.response ? (
-                <ResponseCard props={message.response} />
+                <MemoResponseCard props={message.response} />
               ) : (
                 <div className="inline-block max-w-[70%] p-3 rounded-lg bg-secondary text-secondary-foreground">
                   {message.content}
@@ -196,6 +192,7 @@ export function ChatForm(): JSX.Element {
         )}
         <div ref={bottomRef} />
       </ScrollArea>
+
       <div className="w-full max-w-[800px] mx-auto px-4 mb-8">
         <Form {...form}>
           <form
@@ -251,6 +248,7 @@ export function ChatForm(): JSX.Element {
           </form>
         </Form>
       </div>
+
       <div className="text-center -mt-7">
         <Link
           href="https://inedge.tech"
