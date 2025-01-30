@@ -39,6 +39,7 @@ const MemoPresentationCard = memo(PresentationCard);
 
 export function ChatForm(): JSX.Element {
   const t = useTranslations("mainChat");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);

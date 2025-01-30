@@ -12,6 +12,7 @@ import {
 
 function Navbar(): JSX.Element {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const items = [
