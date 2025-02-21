@@ -18,7 +18,7 @@ function Navbar(): JSX.Element {
   const items = [
     { label: "Linko?", href: "#linko" },
     { label: "Pricing", href: "#pricing" },
-    { label: "Contactanos", href: "#contact" },
+    { label: "Prueba a Linko", href: "#demo" },
   ];
 
   useEffect(() => {
