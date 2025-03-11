@@ -37,7 +37,7 @@ export async function getChat(
     const jsonData = await response.json();
     return CompleteAnswerResponseSchema.parse(jsonData);
   } catch (error) {
-    throw new Error(`${JSON.stringify(error)}`);
+    throw new Error(`${error}`);
   }
 }
 
