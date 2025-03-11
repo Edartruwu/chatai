@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
-import { ChatForm } from "../chat/chat";
 import Link from "next/link";
 
 function DemoWrapper() {
@@ -22,7 +21,7 @@ function DemoWrapper() {
         </div>
 
         <div className="bg-white border-2 border-black rounded-[30px] p-6 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <ChatForm />
+          <iframe className="w-full h-[650px]" src="/chat"></iframe>
         </div>
 
         <div className="flex justify-center items-center space-x-2 text-sm text-muted-foreground">

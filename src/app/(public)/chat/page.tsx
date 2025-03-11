@@ -7,7 +7,7 @@ import { MainLayout } from "@/components/mainLayout";
 import { ChatHelpCircle } from "@/components/chat/deleteData";
 import { HelpCircle } from "@/components/help-circle";
 
-export default function Page() {
+export default function ChatPage() {
   const [chatUser, setChatUser] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

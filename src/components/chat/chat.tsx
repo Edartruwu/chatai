@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, memo } from "react";
+import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -27,34 +27,61 @@ const formSchema = z.object({
   }),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 type Message = {
+  id: string;
   type: "user" | "ai" | "thinking";
   content: string;
   response?: z.infer<typeof CompleteAnswerResponseSchema>;
 };
 
+// Memoized components to prevent unnecessary re-renders
 const MemoResponseCard = memo(ResponseCard);
 const MemoSkeletonResponse = memo(SkeletonResponse);
 const MemoPresentationCard = memo(PresentationCard);
 
 export function ChatForm(): JSX.Element {
   const t = useTranslations("mainChat");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Form setup with better typing
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { message: "" },
   });
 
-  const messageLength = form.watch("message").length;
-  const showCounter = messageLength >= SHOW_COUNTER_THRESHOLD;
-  const isOverLimit = messageLength > MAX_CHARS;
+  const messageText = form.watch("message");
+
+  // Memoized values to prevent recalculations on every render
+  const messageLength = useMemo(() => messageText.length, [messageText]);
+  const showCounter = useMemo(
+    () => messageLength >= SHOW_COUNTER_THRESHOLD,
+    [messageLength],
+  );
+  const isOverLimit = useMemo(() => messageLength > MAX_CHARS, [messageLength]);
+
+  // Precise function to scroll only the ScrollArea viewport
+  const scrollToBottom = useCallback(() => {
+    if (scrollAreaRef.current) {
+      // Target the ScrollAreaPrimitive.Viewport element specifically
+      const viewport = scrollAreaRef.current.querySelector(
+        'div[class*="h-full w-full rounded-"]',
+      );
+
+      if (viewport) {
+        // Set scrollTop directly on the viewport element
+        setTimeout(() => {
+          viewport.scrollTop = viewport.scrollHeight;
+        }, 50);
+      }
+    }
+  }, []);
 
   // Textarea height adjustment
   useEffect(() => {
@@ -63,39 +90,67 @@ export function ChatForm(): JSX.Element {
       textarea.style.height = "auto";
       textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
-  }, [form.watch("message")]);
+  }, [messageText]);
 
-  // Initial message load
+  // Initial message load - only runs once
   useEffect(() => {
-    const storedMessages = localStorage.getItem("chatMessages");
-    if (storedMessages) setMessages(JSON.parse(storedMessages));
+    try {
+      const storedMessages = localStorage.getItem("chatMessages");
+      if (storedMessages) {
+        const parsedMessages = JSON.parse(storedMessages) as Message[];
+        // Ensure all messages have IDs
+        const messagesWithIds = parsedMessages.map((msg) =>
+          msg.id ? msg : { ...msg, id: crypto.randomUUID() },
+        );
+        setMessages(messagesWithIds);
+      }
+    } catch (error) {
+      console.error("Failed to load stored messages:", error);
+    }
   }, []);
 
-  // Scroll to bottom effect
+  // Simplified effect to scroll to bottom when messages change - only affects ScrollArea
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (messages.length > 0) {
+      // Use requestAnimationFrame to ensure DOM has updated first
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
+  }, [messages.length, scrollToBottom]);
 
+  // Optimized function to save messages to localStorage
+  const saveMessagesToStorage = useCallback((updatedMessages: Message[]) => {
+    try {
+      localStorage.setItem("chatMessages", JSON.stringify(updatedMessages));
+    } catch (error) {
+      console.error("Failed to save messages:", error);
+    }
+  }, []);
+
+  // Optimized key handler with proper dependency array
   const handleKeyDown = useCallback(
-    function (event: React.KeyboardEvent<HTMLTextAreaElement>): void {
+    (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
-        form.handleSubmit(onSubmit)();
+        void form.handleSubmit(onSubmit)();
       }
     },
-    [form.handleSubmit],
+    [form],
   );
 
+  // Optimized handler for suggested questions
   const handleSuggestedQuestion = useCallback(
-    function (question: string): void {
+    (question: string): void => {
       form.setValue("message", question);
-      form.handleSubmit(onSubmit)();
+      void form.handleSubmit(onSubmit)();
     },
-    [form.setValue, form.handleSubmit],
+    [form],
   );
 
+  // Optimized submit handler with proper typing and error handling
   const onSubmit = useCallback(
-    async function (values: z.infer<typeof formSchema>): Promise<void> {
+    async (values: FormValues): Promise<void> => {
       if (isOverLimit) {
         toast({
           title: "Error",
@@ -106,31 +161,44 @@ export function ChatForm(): JSX.Element {
       }
 
       setIsLoading(true);
-      const userMessage: Message = { type: "user", content: values.message };
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        type: "user",
+        content: values.message,
+      };
 
       try {
+        // Update with user message
         setMessages((prev) => {
           const updated = [...prev, userMessage];
-          localStorage.setItem("chatMessages", JSON.stringify(updated));
+          saveMessagesToStorage(updated);
           return updated;
         });
 
-        const thinkingMessage: Message = { type: "thinking", content: "" };
+        // Add thinking message
+        const thinkingMessage: Message = {
+          id: crypto.randomUUID(),
+          type: "thinking",
+          content: "",
+        };
+
         setMessages((prev) => {
           const updated = [...prev, thinkingMessage];
-          localStorage.setItem("chatMessages", JSON.stringify(updated));
           return updated;
         });
 
         form.reset();
 
+        // Get user ID and session
         const userIdObject = localStorage.getItem("chatUserData");
         if (!userIdObject) throw new Error(t("noUserIdError"));
 
-        const userId = JSON.parse(userIdObject).id;
+        const userData = JSON.parse(userIdObject) as { id: string };
         const chatSessionId = localStorage.getItem("chatSessionId");
+
+        // Get chat response
         const res = await getChat({
-          userChatId: userId,
+          userChatId: userData.id,
           userMessage: values.message,
           sessionId: chatSessionId,
         });
@@ -138,7 +206,9 @@ export function ChatForm(): JSX.Element {
         const validatedResponse = CompleteAnswerResponseSchema.parse(res);
         localStorage.setItem("chatSessionId", validatedResponse.SessionId);
 
+        // Replace thinking message with AI response
         const aiMessage: Message = {
+          id: crypto.randomUUID(),
           type: "ai",
           content: validatedResponse.Output.Text,
           response: validatedResponse,
@@ -146,58 +216,91 @@ export function ChatForm(): JSX.Element {
 
         setMessages((prev) => {
           const updated = [...prev.slice(0, -1), aiMessage];
-          localStorage.setItem("chatMessages", JSON.stringify(updated));
+          saveMessagesToStorage(updated);
           return updated;
         });
       } catch (error) {
         toast({
           title: "Error",
-          description: `${error}`,
+          description: error instanceof Error ? error.message : String(error),
           variant: "destructive",
+        });
+
+        // Remove thinking message on error
+        setMessages((prev) => {
+          const updated = prev.filter((msg) => msg.type !== "thinking");
+          saveMessagesToStorage(updated);
+          return updated;
         });
       } finally {
         setIsLoading(false);
       }
     },
-    [isOverLimit, toast, t, form.reset],
+    [isOverLimit, toast, t, form, saveMessagesToStorage],
   );
 
+  // Only scroll when loading state changes from true to false (AI response finished)
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      // Small delay to ensure content is rendered
+      setTimeout(scrollToBottom, 100);
+    }
+  }, [isLoading, messages.length, scrollToBottom]);
+
   return (
-    <div className="w-full mx-auto flex flex-col h-screen">
-      <ScrollArea className="flex-grow max-w-[800px] mx-auto w-full p-4">
-        {messages.length === 0 ? (
-          <MemoPresentationCard onSuggestedQuestion={handleSuggestedQuestion} />
-        ) : (
-          messages.map((message, index) => (
-            <div
-              key={index}
-              className={`mb-4 ${
-                message.type === "user" ? "text-right" : "text-left"
-              }`}
-            >
-              {message.type === "user" ? (
-                <div className="inline-block max-w-[70%] p-3 rounded-lg bg-primary text-primary-foreground">
-                  {message.content}
-                </div>
-              ) : message.type === "thinking" ? (
-                <MemoSkeletonResponse />
-              ) : message.response ? (
-                <MemoResponseCard props={message.response} />
-              ) : (
-                <div className="inline-block max-w-[70%] p-3 rounded-lg bg-secondary text-secondary-foreground">
-                  {message.content}
-                </div>
-              )}
-            </div>
-          ))
-        )}
-        <div ref={bottomRef} />
-      </ScrollArea>
+    <div
+      className="w-full mx-auto flex flex-col h-full"
+      style={{ display: "flex", flexDirection: "column", minHeight: "0" }}
+    >
+      <div
+        className="flex-grow max-w-[800px] mx-auto w-full relative"
+        style={{ minHeight: "0", height: "100%" }}
+      >
+        <ScrollArea
+          ref={scrollAreaRef}
+          className="h-full px-4 py-4"
+          style={{ position: "absolute", inset: "0", overflow: "hidden" }}
+        >
+          {messages.length === 0 ? (
+            <MemoPresentationCard
+              onSuggestedQuestion={handleSuggestedQuestion}
+            />
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`mb-4 ${
+                  message.type === "user" ? "text-right" : "text-left"
+                }`}
+              >
+                {message.type === "user" ? (
+                  <div className="inline-block max-w-[70%] p-3 rounded-lg bg-primary text-primary-foreground">
+                    {message.content}
+                  </div>
+                ) : message.type === "thinking" ? (
+                  <MemoSkeletonResponse />
+                ) : message.response ? (
+                  <MemoResponseCard props={message.response} />
+                ) : (
+                  <div className="inline-block max-w-[70%] p-3 rounded-lg bg-secondary text-secondary-foreground">
+                    {message.content}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+          {/* This is the reference for scrolling to the bottom */}
+          <div ref={messagesEndRef} aria-hidden="true" />
+        </ScrollArea>
+      </div>
 
       <div className="w-full max-w-[800px] mx-auto px-4 mb-8">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              void form.handleSubmit(onSubmit)();
+            }}
             className="relative w-full"
           >
             <div className="relative flex items-center bg-muted rounded-lg overflow-hidden">
@@ -212,8 +315,6 @@ export function ChatForm(): JSX.Element {
                         ref={textareaRef}
                         placeholder={t("placeholder")}
                         className="resize-none overflow-y-auto transition-all duration-200 ease-in-out px-4 py-3 min-h-[52px] max-h-[200px] rounded-lg border-0 focus:ring-0 bg-transparent"
-                        onFocus={() => setIsExpanded(true)}
-                        onBlur={() => setIsExpanded(false)}
                         onKeyDown={handleKeyDown}
                         rows={1}
                       />
