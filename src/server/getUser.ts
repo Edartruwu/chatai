@@ -1,13 +1,37 @@
+// src/server/getUser.ts
 "use server";
 import { User } from "@/lib/auth";
-import { serverGET } from "./requests";
+import { headers } from "next/headers";
 
 export async function getServerUser(): Promise<User | null> {
   try {
-    const user = await serverGET<User>("/users/me");
-    return user;
+    const headersList = await headers();
+
+    // Try to get user info from middleware headers first
+    const userId = headersList.get("x-user-id");
+    const userEmail = headersList.get("x-user-email");
+    const isAdmin = headersList.get("x-is-admin") === "true";
+    const userRole = headersList.get("x-user-role");
+
+    if (userId && userEmail) {
+      const user: User = {
+        id: userId,
+        email: userEmail,
+        isAdmin,
+        provider: "google", // We know it's Google OAuth
+        providerId: userId,
+        role: (userRole || (isAdmin ? "admin" : "linko-user")) as
+          | "admin"
+          | "linko-user",
+        subscriptionType: userRole === "linko-user" ? "free-tier" : undefined,
+      };
+
+      return user;
+    }
+
+    return null;
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error getting server user:", error);
     return null;
   }
 }

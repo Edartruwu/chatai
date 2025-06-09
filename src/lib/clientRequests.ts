@@ -1,4 +1,4 @@
-"use server";
+"use client";
 
 import { BASE_URL } from "@/lib/url";
 import { TokenManager } from "@/lib/tokenManager";
@@ -30,9 +30,12 @@ async function refreshAccessToken(): Promise<string | null> {
     const data: RefreshTokenResponse = await response.json();
 
     // Update stored access token
-    const expiresAt = Date.now() + data.expires_in * 1000;
-    localStorage.setItem("access_token", data.access_token);
-    localStorage.setItem("expires_at", expiresAt.toString());
+    TokenManager.storeTokens({
+      access_token: data.access_token,
+      refresh_token: refreshToken,
+      expires_in: data.expires_in,
+      token_type: data.token_type,
+    });
 
     return data.access_token;
   } catch (error) {
@@ -117,27 +120,27 @@ async function makeAuthenticatedRequest<TResponse, TBody = undefined>(
   }
 }
 
-export async function serverGET<TResponse>(
+export async function clientGET<TResponse>(
   endpoint: string,
 ): Promise<TResponse> {
   return makeAuthenticatedRequest<TResponse>("GET", endpoint);
 }
 
-export async function serverPOST<TResponse, TBody>(
+export async function clientPOST<TResponse, TBody>(
   endpoint: string,
   body?: TBody,
 ): Promise<TResponse> {
   return makeAuthenticatedRequest<TResponse, TBody>("POST", endpoint, body);
 }
 
-export async function serverPUT<TResponse, TBody>(
+export async function clientPUT<TResponse, TBody>(
   endpoint: string,
   body: TBody,
 ): Promise<TResponse> {
   return makeAuthenticatedRequest<TResponse, TBody>("PUT", endpoint, body);
 }
 
-export async function serverDelete<TResponse>(
+export async function clientDelete<TResponse>(
   endpoint: string,
 ): Promise<TResponse> {
   return makeAuthenticatedRequest<TResponse>("DELETE", endpoint);

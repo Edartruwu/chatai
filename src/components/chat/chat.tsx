@@ -4,17 +4,19 @@ import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { ArrowUp, Loader2 } from "lucide-react";
+import { ArrowUp, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { CompleteAnswerResponseSchema } from "@/lib/chatLogic";
+import { CompleteAnswerResponseSchema, RateLimitError } from "@/lib/chatLogic";
 import { ResponseCard } from "./response";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getChat } from "@/server/chat/getChat";
+import { getChat, type ChatResult } from "@/server/chat/getChat";
 import { SkeletonResponse } from "./response";
 import { PresentationCard } from "./response";
+import { RateLimitDisplay } from "./rateLimitDisplay";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -36,6 +38,12 @@ type Message = {
   response?: z.infer<typeof CompleteAnswerResponseSchema>;
 };
 
+interface RateLimitUsage {
+  requests_limit: string;
+  requests_remaining: string;
+  tier: string;
+}
+
 // Memoized components to prevent unnecessary re-renders
 const MemoResponseCard = memo(ResponseCard);
 const MemoSkeletonResponse = memo(SkeletonResponse);
@@ -45,6 +53,12 @@ export function ChatForm(): JSX.Element {
   const t = useTranslations("mainChat");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [rateLimitUsage, setRateLimitUsage] = useState<
+    RateLimitUsage | undefined
+  >();
+  const [rateLimitError, setRateLimitError] = useState<RateLimitError | null>(
+    null,
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -148,6 +162,11 @@ export function ChatForm(): JSX.Element {
     [form],
   );
 
+  // Clear rate limit error when new message is being sent
+  const clearRateLimitError = useCallback(() => {
+    setRateLimitError(null);
+  }, []);
+
   // Optimized submit handler with proper typing and error handling
   const onSubmit = useCallback(
     async (values: FormValues): Promise<void> => {
@@ -160,7 +179,10 @@ export function ChatForm(): JSX.Element {
         return;
       }
 
+      // Clear any previous rate limit errors
+      clearRateLimitError();
       setIsLoading(true);
+
       const userMessage: Message = {
         id: crypto.randomUUID(),
         type: "user",
@@ -197,21 +219,35 @@ export function ChatForm(): JSX.Element {
         const chatSessionId = localStorage.getItem("chatSessionId");
 
         // Get chat response
-        const res = await getChat({
+        const chatResult: ChatResult = await getChat({
           userChatId: userData.id,
           userMessage: values.message,
           sessionId: chatSessionId,
         });
 
-        const validatedResponse = CompleteAnswerResponseSchema.parse(res);
-        localStorage.setItem("chatSessionId", validatedResponse.SessionId);
+        // Update rate limit usage from response
+        if (chatResult.usage) {
+          setRateLimitUsage({
+            requests_limit: chatResult.usage.requests_limit,
+            requests_remaining: chatResult.usage.requests_remaining,
+            tier: chatResult.usage.tier,
+          });
+        } else if (chatResult.rateLimitHeaders) {
+          setRateLimitUsage({
+            requests_limit: chatResult.rateLimitHeaders.limit,
+            requests_remaining: chatResult.rateLimitHeaders.remaining,
+            tier: chatResult.rateLimitHeaders.tier || "Unknown",
+          });
+        }
+
+        localStorage.setItem("chatSessionId", chatResult.response.SessionId);
 
         // Replace thinking message with AI response
         const aiMessage: Message = {
           id: crypto.randomUUID(),
           type: "ai",
-          content: validatedResponse.Output.Text,
-          response: validatedResponse,
+          content: chatResult.response.Output.Text,
+          response: chatResult.response,
         };
 
         setMessages((prev) => {
@@ -220,11 +256,20 @@ export function ChatForm(): JSX.Element {
           return updated;
         });
       } catch (error) {
-        toast({
-          title: "Error",
-          description: error instanceof Error ? error.message : String(error),
-          variant: "destructive",
-        });
+        if (error instanceof RateLimitError) {
+          setRateLimitError(error);
+          toast({
+            title: "Rate Limit Exceeded",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error instanceof Error ? error.message : String(error),
+            variant: "destructive",
+          });
+        }
 
         // Remove thinking message on error
         setMessages((prev) => {
@@ -236,7 +281,7 @@ export function ChatForm(): JSX.Element {
         setIsLoading(false);
       }
     },
-    [isOverLimit, toast, t, form, saveMessagesToStorage],
+    [isOverLimit, toast, t, form, saveMessagesToStorage, clearRateLimitError],
   );
 
   // Only scroll when loading state changes from true to false (AI response finished)
@@ -252,6 +297,32 @@ export function ChatForm(): JSX.Element {
       className="w-full mx-auto flex flex-col h-full"
       style={{ display: "flex", flexDirection: "column", minHeight: "0" }}
     >
+      {/* Rate Limit Display */}
+      <div className="max-w-[800px] mx-auto w-full px-4 py-2">
+        <RateLimitDisplay usage={rateLimitUsage} className="mb-4" />
+      </div>
+
+      {/* Rate Limit Error Alert */}
+      {rateLimitError && (
+        <div className="max-w-[800px] mx-auto w-full px-4 mb-4">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <p>{rateLimitError.message}</p>
+                {rateLimitError.upgradeMessage && (
+                  <p className="text-sm">{rateLimitError.upgradeMessage}</p>
+                )}
+                <p className="text-xs">
+                  Reset time:{" "}
+                  {new Date(rateLimitError.resetTime * 1000).toLocaleString()}
+                </p>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <div
         className="flex-grow max-w-[800px] mx-auto w-full relative"
         style={{ minHeight: "0", height: "100%" }}
@@ -317,6 +388,7 @@ export function ChatForm(): JSX.Element {
                         className="resize-none overflow-y-auto transition-all duration-200 ease-in-out px-4 py-3 min-h-[52px] max-h-[200px] rounded-lg border-0 focus:ring-0 bg-transparent"
                         onKeyDown={handleKeyDown}
                         rows={1}
+                        disabled={isLoading || !!rateLimitError}
                       />
                     </FormControl>
                   </FormItem>
@@ -326,7 +398,7 @@ export function ChatForm(): JSX.Element {
                 type="submit"
                 size="icon"
                 className="absolute right-2 bottom-2 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={messageLength === 0 || isLoading}
+                disabled={messageLength === 0 || isLoading || !!rateLimitError}
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

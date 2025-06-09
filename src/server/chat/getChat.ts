@@ -1,11 +1,11 @@
 "use server";
 
-import { CHAT_API_KEY } from "@/lib/chatEnv";
 import {
   CompleteAnswerResponse,
-  CompleteAnswerResponseSchema,
+  fetchCompleteAnswer,
+  RateLimitError,
+  type UsageInfo,
 } from "@/lib/chatLogic";
-import { BASE_URL } from "@/lib/url";
 
 export interface getChatProps {
   userMessage: string;
@@ -13,70 +13,42 @@ export interface getChatProps {
   userChatId: string;
 }
 
-export async function getChat(
-  params: getChatProps,
-): Promise<CompleteAnswerResponse> {
+export interface ChatResult {
+  response: CompleteAnswerResponse;
+  usage?: UsageInfo;
+  rateLimitHeaders?: {
+    limit: string;
+    remaining: string;
+    tier?: string;
+  };
+}
+
+export async function getChat(params: getChatProps): Promise<ChatResult> {
   try {
-    const response = await fetch(`${BASE_URL}/chat/complete-answer`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${CHAT_API_KEY}`,
-      },
-      body: JSON.stringify(params),
+    const result = await fetchCompleteAnswer({
+      userMessage: params.userMessage,
+      sessionId: params.sessionId,
+      userChatId: params.userChatId,
     });
 
-    if (response === undefined || response === null) {
-      throw new Error("No response from Bedrock");
-    }
+    // Extract rate limit information from headers
+    const rateLimitHeaders = {
+      limit: result.headers.get("X-RateLimit-Limit") || "unknown",
+      remaining: result.headers.get("X-RateLimit-Remaining") || "unknown",
+      tier: result.headers.get("X-RateLimit-Tier") || undefined,
+    };
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} ${response.statusText}`);
-    }
-
-    const jsonData = await response.json();
-    return CompleteAnswerResponseSchema.parse(jsonData);
+    return {
+      response: result.response,
+      usage: result.usage,
+      rateLimitHeaders:
+        rateLimitHeaders.limit !== "unknown" ? rateLimitHeaders : undefined,
+    };
   } catch (error) {
-    throw new Error(`${error}`);
-  }
-}
-
-export interface ChatUsersParams {
-  age: number;
-  gender: string;
-  ocupation: string;
-}
-
-export interface ChatUsersResponse {
-  age: number;
-  gender: string;
-  ocupation: string;
-  userID: string;
-}
-export async function ChatUsers(
-  params: ChatUsersParams,
-): Promise<ChatUsersResponse> {
-  try {
-    const response = await fetch(`${BASE_URL}/chat-users`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${CHAT_API_KEY}`,
-      },
-      body: JSON.stringify(params),
-    });
-
-    if (response === undefined || response === null) {
-      throw new Error("No response from Bedrock");
+    if (error instanceof RateLimitError) {
+      // Re-throw rate limit errors with additional context
+      throw error;
     }
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} ${response.statusText}`);
-    }
-    const jsonData = await response.json();
-    console.info(jsonData);
-    return jsonData;
-  } catch (error) {
-    throw new Error(`${JSON.stringify(error)}`);
+    throw new Error(`Chat request failed: ${error}`);
   }
 }
