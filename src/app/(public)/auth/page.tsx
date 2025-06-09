@@ -1,27 +1,132 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BASE_URL } from "@/lib/url";
+import { useAuth } from "@/components/auth/ProtectedRoute";
+import { Loader2, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
-export default function Page() {
+export default function AuthPage() {
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [redirecting, setRedirecting] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // Handle URL error parameters
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        invalid_state: "Error de seguridad. Por favor, intenta de nuevo.",
+        missing_code: "Error de autorización. Por favor, intenta de nuevo.",
+        oauth_failed:
+          "Error de autenticación con Google. Por favor, intenta de nuevo.",
+        session_failed: "Error de sesión. Por favor, intenta de nuevo.",
+        user_failed:
+          "Error al obtener información del usuario. Por favor, intenta de nuevo.",
+        token_failed: "Error al generar token. Por favor, intenta de nuevo.",
+        refresh_failed:
+          "Error al actualizar token. Por favor, intenta de nuevo.",
+      };
+
+      setAuthError(
+        errorMessages[error] || "Error de autenticación desconocido.",
+      );
+    }
+  }, [searchParams]);
+
+  // Handle authenticated user redirection
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      setRedirecting(true);
+
+      // Add a small delay to show the redirecting state
+      const timer = setTimeout(() => {
+        if (user.isAdmin || user.role === "admin") {
+          router.push("/admin");
+        } else if (user.role === "linko-user") {
+          router.push("/user");
+        } else {
+          // Fallback for unknown roles
+          router.push("/");
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, isAuthenticated, user, router]);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <main className="flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 h-screen w-screen">
+        <Card className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 shadow-lg rounded-2xl">
+          <div className="flex flex-col items-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-gray-600 dark:text-gray-300">
+              Verificando autenticación...
+            </p>
+          </div>
+        </Card>
+      </main>
+    );
+  }
+
+  // Show redirecting state for authenticated users
+  if (redirecting && isAuthenticated) {
+    return (
+      <main className="flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 h-screen w-screen">
+        <Card className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 shadow-lg rounded-2xl">
+          <div className="flex flex-col items-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="text-center">
+              <p className="text-gray-900 dark:text-white font-semibold">
+                ¡Bienvenido de vuelta!
+              </p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                Redirigiendo...
+              </p>
+            </div>
+          </div>
+        </Card>
+      </main>
+    );
+  }
+
+  // Show login form for non-authenticated users
   return (
     <main className="flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 h-screen w-screen">
       <Card className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 shadow-lg rounded-2xl">
+        {/* Error Alert */}
+        {authError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{authError}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="text-center space-y-2">
           <div className="flex justify-center py-4">
-            <Image src="/opdlogo.svg" alt="" width={200} height={200} />
+            <Image src="/opdlogo.svg" alt="OPD Logo" width={200} height={200} />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Bienvenido!
+            ¡Bienvenido!
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             Ingresa a tu cuenta para poder continuar
           </p>
         </div>
+
         <div className="pt-4">
+          {/* Option 1: Direct link to backend (current approach) */}
           <Link href={`${BASE_URL}/login/google`} className="block w-full">
             <Button className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600 transition-all duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2 py-6 text-lg rounded-xl shadow-md">
               <svg
@@ -49,22 +154,34 @@ export default function Page() {
               <span>Ingresa con Google</span>
             </Button>
           </Link>
+
+          {/* Option 2: Button with client-side handler (better error handling)
+          <Button 
+            onClick={handleGoogleAuth}
+            className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600 transition-all duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2 py-6 text-lg rounded-xl shadow-md"
+          >
+            <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <!-- Google icon paths -->
+            </svg>
+            <span>Ingresa con Google</span>
+          </Button>
+          */}
         </div>
+
         <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-          Ingresando aceptas a los {"  "}
+          Ingresando aceptas los{" "}
           <Link
             href="/terms"
             className="text-blue-600 hover:underline dark:text-blue-400"
           >
-            {"  "} Terminos de servicio
-            {"  "}
-          </Link>
-          y{"  "}
+            Términos de servicio
+          </Link>{" "}
+          y{" "}
           <Link
             href="/privacy"
             className="text-blue-600 hover:underline dark:text-blue-400"
           >
-            {"  "} Politicas de privacidad
+            Políticas de privacidad
           </Link>
         </div>
       </Card>

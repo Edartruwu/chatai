@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { TokenManager } from "@/lib/tokenManager";
 import { BASE_URL } from "@/lib/url";
 
-interface AuthCallbackResponse {
+interface TokenExchangeResponse {
   access_token: string;
   refresh_token: string;
   expires_in: number;
@@ -27,7 +27,7 @@ export default function AuthCallbackPage() {
     "loading",
   );
   const [error, setError] = useState<string>("");
-  const [user, setUser] = useState<AuthCallbackResponse["user"] | null>(null);
+  const [user, setUser] = useState<TokenExchangeResponse["user"] | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -36,14 +36,67 @@ export default function AuthCallbackPage() {
       try {
         setStatus("loading");
 
+        // Check for error from OAuth flow
+        const errorParam = searchParams.get("error");
+        if (errorParam) {
+          throw new Error(`OAuth error: ${errorParam}`);
+        }
+
+        // Check if this is a temporary token exchange (new flow)
+        const tempToken = searchParams.get("token");
+        if (tempToken) {
+          // New flow: Exchange temporary token for real JWT tokens
+          const response = await fetch(
+            `${BASE_URL}/auth/exchange/${tempToken}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Token exchange failed: ${response.status} - ${errorText}`,
+            );
+          }
+
+          const data: TokenExchangeResponse = await response.json();
+
+          // Store the JWT tokens
+          TokenManager.storeTokens({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            expires_in: data.expires_in,
+            token_type: data.token_type,
+          });
+
+          setUser(data.user);
+          setStatus("success");
+
+          // Redirect based on user role/admin status
+          setTimeout(() => {
+            if (data.user.isAdmin || data.user.role === "admin") {
+              router.push("/admin");
+            } else {
+              router.push("/");
+            }
+          }, 2000);
+
+          return;
+        }
+
+        // Original flow: Handle OAuth callback with code and state
         const code = searchParams.get("code");
         const state = searchParams.get("state");
 
         if (!code || !state) {
-          throw new Error("Missing authorization code or state");
+          throw new Error("Missing authorization code or state from OAuth");
         }
 
-        // Call the backend callback endpoint
+        // Call the backend callback endpoint directly
         const response = await fetch(
           `${BASE_URL}/login/google/callback?code=${code}&state=${state}`,
           {
@@ -59,7 +112,7 @@ export default function AuthCallbackPage() {
           );
         }
 
-        const data: AuthCallbackResponse = await response.json();
+        const data: TokenExchangeResponse = await response.json();
 
         // Store the JWT tokens
         TokenManager.storeTokens({

@@ -11,16 +11,6 @@ export interface User {
   subscriptionType?: "free-tier" | "linko-plus" | "linko-vip";
 }
 
-export async function handleAuthCallback(): Promise<User | null> {
-  try {
-    // This function is now handled by the callback page component
-    return null;
-  } catch (error) {
-    console.error("Auth callback error:", error);
-    return null;
-  }
-}
-
 export function isAuthenticated(): boolean {
   const token = TokenManager.getAccessToken();
   return !!token && !TokenManager.isTokenExpired();
@@ -136,6 +126,8 @@ export async function logout(): Promise<void> {
 }
 
 export async function initiateGoogleAuth(): Promise<void> {
+  // Simply redirect to the backend OAuth endpoint
+  // The backend will handle the OAuth flow and redirect back to our callback
   window.location.href = `${BASE_URL}/login/google`;
 }
 
